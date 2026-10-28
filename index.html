@@ -241,6 +241,20 @@ ol.steps li::before{content:counter(s);position:absolute;left:10px;top:50%;trans
 textarea.csvbox{width:100%;min-height:120px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.78rem;border:1px solid var(--line);border-radius:10px;padding:8px}
 details{margin:10px 0}
 summary{cursor:pointer;font-weight:700;color:var(--navy)}
+.adm .acts{white-space:nowrap;text-align:right}
+.adm .acts button{border:1px solid var(--line);background:#fff;border-radius:8px;padding:3px 8px;cursor:pointer;margin-left:3px}
+.adm .acts button:hover{border-color:var(--accent)}
+.adm .acts button.arm{background:var(--bad);color:#fff;border-color:var(--bad)}
+.adm td.q{max-width:380px}
+.frm{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.frm label{display:flex;flex-direction:column;font-size:.85rem;font-weight:600;color:#334155;gap:4px}
+.frm input,.frm select,.frm textarea{border:1px solid var(--line);border-radius:8px;padding:7px 10px;background:#fff;font-weight:400}
+.frm .full{grid-column:1/-1}
+.frm .two{grid-column:span 2}
+@media(max-width:700px){.frm{grid-template-columns:1fr}.frm .two{grid-column:auto}}
+.warnbox{background:var(--warn-soft);border-left:5px solid var(--warn);padding:10px 14px;border-radius:0 10px 10px 0;margin:10px 0}
+.cnt0{color:var(--bad);font-weight:800}
+footer a{color:inherit}
 footer{margin:24px 0 8px;text-align:center;color:var(--muted);font-size:.82rem}
 footer label{cursor:pointer}
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
@@ -262,7 +276,7 @@ footer label{cursor:pointer}
   <main id="view"></main>
   <footer>
     Materi pembelajaran Informatika · tanpa pemrograman · hasil tersimpan di perangkat ini dan dapat diunduh sebagai CSV<br>
-    <label><input type="checkbox" id="guru"> Mode guru (buka semua level latihan)</label>
+    <label><input type="checkbox" id="guru"> Mode guru (buka semua level latihan)</label> · <a href="#" data-go="admin">🔐 Admin soal</a>
   </footer>
 </div>
 
@@ -835,14 +849,22 @@ let BANK=[],BANKSRC='bawaan';
 function parseBank(text){
   return parseCSV(text).filter(r=>r.id&&r.topik&&r.pertanyaan&&r.jawaban).map(r=>({id:r.id.trim(),topik:r.topik.trim().toLowerCase(),level:parseInt(r.level,10)||1,tipe:(r.tipe||'pg').trim().toLowerCase(),pertanyaan:r.pertanyaan,opsi_a:r.opsi_a||'',opsi_b:r.opsi_b||'',opsi_c:r.opsi_c||'',opsi_d:r.opsi_d||'',jawaban:r.jawaban.trim(),penjelasan:r.penjelasan||''}));
 }
+const ADMIN_PIN='guru123'; // GANTI PIN ini sebelum dipublikasikan. Catatan: ini hanya penghalang ringan, bukan keamanan sungguhan.
+const DKEY='algo_dasar_bank_draft_v1';
+const PFX={linear:'LIN',binary:'BIN',bubble:'BUB',selection:'SEL',stack:'STK',queue:'QUE'};
+function loadDraft(){try{const r=localStorage.getItem(DKEY);return r?JSON.parse(r):null}catch(e){return null}}
+function sortBank(){const ix=k=>{const i=ORDER.indexOf(k);return i<0?99:i};BANK=BANK.map((q,i)=>[q,i]).sort((a,b)=>ix(a[0].topik)-ix(b[0].topik)||a[0].level-b[0].level||a[1]-b[1]).map(x=>x[0])}
+function saveDraft(){sortBank();try{localStorage.setItem(DKEY,JSON.stringify(BANK))}catch(e){}BANKSRC='draf admin (browser ini)'}
+function clearDraft(){try{localStorage.removeItem(DKEY)}catch(e){}}
 async function loadBank(){
-  const emb=$('#csvdata').textContent;
+  const emb=$('#csvdata').textContent;let got=false;
   try{
     const ctl=new AbortController();const to=setTimeout(()=>ctl.abort(),2500);
     const r=await fetch('soal.csv',{cache:'no-store',signal:ctl.signal});clearTimeout(to);
-    if(r.ok){const b=parseBank(await r.text());if(b.length){BANK=b;BANKSRC='soal.csv';return}}
+    if(r.ok){const b=parseBank(await r.text());if(b.length){BANK=b;BANKSRC='soal.csv';got=true}}
   }catch(e){}
-  BANK=parseBank(emb);BANKSRC='bawaan';
+  if(!got){BANK=parseBank(emb);BANKSRC='bawaan'}
+  const d=loadDraft();if(d&&d.length){BANK=d;BANKSRC='draf admin (browser ini)'}
 }
 
 /* ============ Router & tampilan ============ */
@@ -858,13 +880,14 @@ function renderProg(){
 function render(){
   cleanup();renderNav();renderProg();
   const v=$('#view');v.innerHTML='';
-  if(state.page==='home')homeView(v);else if(state.page==='hasil')hasilView(v);else topicView(v,state.topic);
+  if(state.page==='home')homeView(v);else if(state.page==='hasil')hasilView(v);else if(state.page==='admin')adminView(v);else topicView(v,state.topic);
   try{window.scrollTo({top:0})}catch(e){}
 }
 document.addEventListener('click',e=>{
   const g=e.target.closest('[data-go]');if(!g)return;
+  e.preventDefault();
   const p=g.dataset.go.split(':');
-  if(p[0]==='home')go('home');else if(p[0]==='hasil')go('hasil');else go('topic',p[1],p[2]||'konsep');
+  if(p[0]==='home')go('home');else if(p[0]==='hasil')go('hasil');else if(p[0]==='admin')go('admin');else go('topic',p[1],p[2]||'konsep');
 });
 
 function homeView(v){
@@ -1007,13 +1030,100 @@ function hasilView(v){
   };
 }
 
+/* ============ Admin soal ============ */
+let adminOK=false,adm={topik:'',level:'',q:'',msg:''},editing=null;
+function nextId(topik,level){const p=PFX[topik]+'-'+level;const used=new Set(BANK.map(q=>q.id));let n=1;while(used.has(p+n))n++;return p+n}
+function blankQ(){return{_new:true,id:'',topik:adm.topik||'linear',level:+adm.level||1,tipe:'pg',pertanyaan:'',opsi_a:'',opsi_b:'',opsi_c:'',opsi_d:'',jawaban:'A',penjelasan:''}}
+function editorHtml(e){
+  const pg=e.tipe==='pg';
+  return `<div class="panel adm" style="border-color:var(--accent)"><h3>${e._new?'➕ Soal baru':'✏️ Ubah soal '+esc(e.id)}</h3><div class="frm">
+  <label>Topik<select id="e_topik">${ORDER.map(k=>`<option value="${k}" ${k===e.topik?'selected':''}>${T[k].nama}</option>`).join('')}</select></label>
+  <label>Level<select id="e_level">${[1,2,3].map(l=>`<option value="${l}" ${l===e.level?'selected':''}>Level ${l}</option>`).join('')}</select></label>
+  <label>Tipe soal<select id="e_tipe"><option value="pg" ${pg?'selected':''}>Pilihan ganda</option><option value="isian" ${pg?'':'selected'}>Isian singkat</option></select></label>
+  <label class="full">Pertanyaan<textarea id="e_q" rows="3">${esc(e.pertanyaan)}</textarea></label>
+  ${['a','b','c','d'].map(x=>`<label class="pgonly two" style="${pg?'':'display:none'}">Opsi ${x.toUpperCase()}<input id="e_o${x}" value="${esc(e['opsi_'+x])}"></label>`).join('')}
+  <label class="pgonly" style="${pg?'':'display:none'}">Jawaban benar<select id="e_apg">${['A','B','C','D'].map(x=>`<option ${x===String(e.jawaban).toUpperCase()?'selected':''}>${x}</option>`).join('')}</select></label>
+  <label class="isonly two" style="${pg?'display:none':''}">Jawaban benar (alternatif dipisah tanda |)<input id="e_ais" value="${pg?'':esc(e.jawaban)}" placeholder="contoh: 1,4,2,5,8"></label>
+  <label class="full">Penjelasan (tampil setelah siswa menjawab)<textarea id="e_pen" rows="2">${esc(e.penjelasan)}</textarea></label></div>
+  <div id="emsg" class="muted" style="margin-top:8px"></div><div id="eprev"></div>
+  <div class="ops"><button class="btn primary" id="esave">💾 Simpan soal</button><button class="btn" id="eprevb">👁 Pratinjau</button><button class="btn" id="ecancel">Batal</button></div></div>`;
+}
+function adminView(v){
+  if(!adminOK){
+    v.innerHTML=`<div class="panel" style="max-width:420px;margin:30px auto"><h3>🔐 Admin soal</h3><p>Masukkan PIN guru untuk mengelola bank soal.</p><div class="ops"><input id="pin" type="password" placeholder="PIN" style="width:170px"><button class="btn primary" id="pgo">Masuk</button></div><div id="pmsg" class="muted"></div></div>`;
+    const go1=()=>{if($('#pin',v).value===ADMIN_PIN){adminOK=true;adminView(v)}else{$('#pmsg',v).textContent='PIN salah.'}};
+    $('#pgo',v).onclick=go1;$('#pin',v).onkeydown=e=>{if(e.key==='Enter')go1()};$('#pin',v).focus();return;
+  }
+  const draft=BANKSRC.indexOf('draf')===0;
+  const rows=BANK.map((q,i)=>({q,i})).filter(({q})=>(!adm.topik||q.topik===adm.topik)&&(!adm.level||q.level===+adm.level)&&(!adm.q||(q.pertanyaan+' '+q.id).toLowerCase().indexOf(adm.q.toLowerCase())>=0));
+  const cnt=(k,l)=>BANK.filter(q=>q.topik===k&&q.level===l).length;
+  v.innerHTML=`<div class="panel adm"><div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;align-items:center"><h3 style="margin:0">🛠 Admin: kelola soal</h3><button class="btn" id="alo">Keluar admin</button></div>
+  <p class="muted">Sumber soal aktif: <b>${esc(BANKSRC)}</b> · Total <b>${BANK.length}</b> soal.</p>
+  ${draft?`<div class="warnbox"><b>Draf aktif di browser ini.</b> Siswa belum melihat perubahan ini. Klik <b>Unduh soal.csv</b>, lalu ganti file <code>soal.csv</code> lama di GitHub agar berlaku untuk semua siswa.</div>`:'<p class="muted">Semua perubahan disimpan sebagai <b>draf</b> di browser ini. Untuk menerapkannya ke siswa, unduh <code>soal.csv</code> lalu unggah ke GitHub.</p>'}
+  ${adm.msg?`<div class="msgbox ok" style="min-height:0">${adm.msg}</div>`:''}
+  <div class="ops"><button class="btn primary" id="anew">➕ Soal baru</button><button class="btn" id="aexp">⬇ Unduh soal.csv</button><label class="btn" style="cursor:pointer">⬆ Muat dari CSV<input type="file" id="aimp" accept=".csv,text/csv" hidden></label><button class="btn danger" id="adrop" ${draft?'':'disabled'}>↩ Buang draf</button></div><div id="aout"></div>
+  <div class="tblwrap"><table class="cmp"><tr><th>Jumlah soal</th><th>Level 1</th><th>Level 2</th><th>Level 3</th></tr>${ORDER.map(k=>`<tr><td>${T[k].ikon} ${T[k].nama}</td>${[1,2,3].map(l=>`<td class="${cnt(k,l)===0?'cnt0':''}">${cnt(k,l)}</td>`).join('')}</tr>`).join('')}</table></div></div>
+  <div id="aedit">${editing?editorHtml(editing):''}</div>
+  <div class="panel adm"><div class="cfg"><label>Topik: <select id="ft"><option value="">Semua</option>${ORDER.map(k=>`<option value="${k}" ${adm.topik===k?'selected':''}>${T[k].nama}</option>`).join('')}</select></label><label>Level: <select id="fl"><option value="">Semua</option>${[1,2,3].map(l=>`<option value="${l}" ${+adm.level===l?'selected':''}>${l}</option>`).join('')}</select></label><input id="fq" placeholder="Cari kata di pertanyaan…" value="${esc(adm.q)}" style="flex:1 1 200px"></div>
+  <div class="tblwrap"><table class="cmp"><tr><th>ID</th><th>Topik</th><th>Lv</th><th>Tipe</th><th>Pertanyaan</th><th></th></tr>${rows.map(({q,i})=>`<tr><td>${esc(q.id)}</td><td>${T[q.topik]?T[q.topik].nama:esc(q.topik)}</td><td>${q.level}</td><td>${q.tipe==='pg'?'PG':'Isian'}</td><td class="q">${esc(q.pertanyaan.length>110?q.pertanyaan.slice(0,110)+'…':q.pertanyaan)}</td><td class="acts"><button data-act="up" data-i="${i}" title="Naik">▲</button><button data-act="down" data-i="${i}" title="Turun">▼</button><button data-act="edit" data-i="${i}">✏️ Ubah</button><button data-act="dup" data-i="${i}">⧉</button><button data-act="del" data-i="${i}" title="Hapus">🗑</button></td></tr>`).join('')||'<tr><td colspan="6" class="muted">Tidak ada soal yang cocok.</td></tr>'}</table></div></div>`;
+  adm.msg='';
+  const re=()=>adminView(v);
+  $('#alo',v).onclick=()=>{adminOK=false;editing=null;re()};
+  $('#anew',v).onclick=()=>{editing=blankQ();re();const m=$('#aedit',v);if(m.scrollIntoView)m.scrollIntoView({behavior:'smooth'})};
+  $('#aexp',v).onclick=()=>{const cols=['id','topik','level','tipe','pertanyaan','opsi_a','opsi_b','opsi_c','opsi_d','jawaban','penjelasan'];const text=toCSV(cols,BANK);download('soal.csv',text);$('#aout',v).innerHTML=`<p class="muted" style="margin-top:10px">Jika unduhan tidak berjalan, salin teks ini dan simpan sebagai <b>soal.csv</b> (encoding UTF-8):</p><textarea class="csvbox" readonly>${esc(text)}</textarea>`;const ta=$('.csvbox',v);ta.onfocus=()=>ta.select()};
+  $('#adrop',v).onclick=()=>{clearDraft();editing=null;loadBank().then(()=>{adm.msg='Draf dibuang. Soal kembali memakai '+esc(BANKSRC)+'.';re()})};
+  $('#aimp',v).onchange=e=>{const f=e.target.files[0];if(!f)return;const rd=new FileReader();rd.onload=()=>{const b=parseBank(rd.result);if(!b.length){adm.msg='File tidak valid: tidak ada baris soal yang terbaca.';return re()}BANK=b;editing=null;saveDraft();adm.msg=`Berhasil memuat ${b.length} soal dari file sebagai draf.`;re()};rd.readAsText(f)};
+  $('#ft',v).onchange=e=>{adm.topik=e.target.value;re()};$('#fl',v).onchange=e=>{adm.level=e.target.value;re()};
+  const fq=$('#fq',v);fq.onchange=()=>{adm.q=fq.value;re()};
+  $$('[data-act]',v).forEach(b=>b.onclick=()=>{
+    const i=+b.dataset.i,q=BANK[i],a=b.dataset.act;
+    if(a==='edit'){editing=Object.assign({},q);re();const m=$('#aedit',v);if(m.scrollIntoView)m.scrollIntoView({behavior:'smooth'})}
+    else if(a==='dup'){editing=Object.assign({},q,{_new:true,id:''});re();const m=$('#aedit',v);if(m.scrollIntoView)m.scrollIntoView({behavior:'smooth'})}
+    else if(a==='del'){
+      if(!b.classList.contains('arm')){b.classList.add('arm');b.textContent='Yakin?';setTimeout(()=>{if(b.isConnected){b.classList.remove('arm');b.textContent='🗑'}},3000);return}
+      BANK.splice(i,1);saveDraft();adm.msg='Soal '+esc(q.id)+' dihapus (di draf).';re();
+    }else{
+      const d=a==='up'?-1:1;let j=i+d;while(j>=0&&j<BANK.length&&!(BANK[j].topik===q.topik&&BANK[j].level===q.level)){if(BANK[j].topik!==q.topik||BANK[j].level!==q.level)break}
+      if(j>=0&&j<BANK.length&&BANK[j].topik===q.topik&&BANK[j].level===q.level){const t=BANK[i];BANK[i]=BANK[j];BANK[j]=t;saveDraft();re()}
+    }
+  });
+  if(editing){
+    const tip=$('#e_tipe',v);
+    tip.onchange=()=>{const pg=tip.value==='pg';$$('.pgonly',v).forEach(x=>x.style.display=pg?'':'none');$$('.isonly',v).forEach(x=>x.style.display=pg?'none':'')};
+    const read=()=>{const g=id=>$('#'+id,v).value;const pg=g('e_tipe')==='pg';return{topik:g('e_topik'),level:+g('e_level'),tipe:g('e_tipe'),pertanyaan:g('e_q').trim(),opsi_a:pg?g('e_oa').trim():'',opsi_b:pg?g('e_ob').trim():'',opsi_c:pg?g('e_oc').trim():'',opsi_d:pg?g('e_od').trim():'',jawaban:pg?g('e_apg'):g('e_ais').trim(),penjelasan:g('e_pen').trim()}};
+    const check=e=>{
+      if(!e.pertanyaan)return'Pertanyaan belum diisi.';
+      if(e.tipe==='pg'){
+        const o=[e.opsi_a,e.opsi_b,e.opsi_c,e.opsi_d];
+        if(o.filter(Boolean).length<2)return'Pilihan ganda minimal punya 2 opsi.';
+        if(!o['ABCD'.indexOf(e.jawaban)])return`Jawaban benar adalah ${e.jawaban}, tetapi opsi ${e.jawaban} masih kosong.`;
+        const f=o.filter(Boolean).map(x=>x.toLowerCase());if(new Set(f).size!==f.length)return'Ada dua opsi yang isinya sama.';
+      }else if(!e.jawaban)return'Jawaban isian belum diisi.';
+      if(!e.penjelasan)return'Penjelasan belum diisi (membantu siswa belajar dari jawabannya).';
+      return'';
+    };
+    $('#ecancel',v).onclick=()=>{editing=null;re()};
+    $('#eprevb',v).onclick=()=>{
+      const e=read(),m=check(e);
+      $('#eprev',v).innerHTML=`<div class="panel soft" style="margin:10px 0"><b>Pratinjau (tampilan siswa)</b><p class="qtext">${fmt(e.pertanyaan||'(pertanyaan kosong)')}</p>${e.tipe==='pg'?'<div class="opts">'+['a','b','c','d'].filter(x=>e['opsi_'+x]).map(x=>`<div class="opt ${x.toUpperCase()===e.jawaban?'ok':''}"><span class="k">${x.toUpperCase()}</span><span>${esc(e['opsi_'+x])}</span></div>`).join('')+'</div>':`<p>Jawaban yang diterima: <b>${esc(e.jawaban)}</b></p>`}<div class="fb ok"><b>✅ Benar!</b> ${esc(e.penjelasan)}</div>${m?`<div class="badge no">${esc(m)}</div>`:''}</div>`;
+    };
+    $('#esave',v).onclick=()=>{
+      const e=read(),m=check(e);
+      if(m){$('#emsg',v).innerHTML=`<span class="badge no">${esc(m)}</span>`;return}
+      if(editing._new){const q=Object.assign({id:nextId(e.topik,e.level)},e);BANK.push(q);adm.msg='Soal baru ditambahkan: '+esc(q.id)+'.'}
+      else{const i=BANK.findIndex(x=>x.id===editing.id);const q=Object.assign({},BANK[i],e);if(e.topik!==editing.topik||e.level!==editing.level){BANK.splice(i,1);q.id=nextId(e.topik,e.level);BANK.push(q)}else BANK[i]=q;adm.msg='Soal '+esc(q.id)+' diperbarui.'}
+      editing=null;saveDraft();re();
+    };
+  }
+}
+
 /* ============ Init ============ */
 $('#nama').value=S.nama||'';
 $('#nama').addEventListener('input',e=>{S.nama=e.target.value.trim();saveS()});
 $('#guru').checked=!!S.guru;
 $('#guru').addEventListener('change',e=>{S.guru=e.target.checked;saveS();render()});
 loadBank().then(render);
-window.__app={parseCSV,linearSteps,binarySteps,bubbleSteps,selectionSteps,get BANK(){return BANK}};
+window.__app={go,parseCSV,linearSteps,binarySteps,bubbleSteps,selectionSteps,get BANK(){return BANK}};
 })();
 </script>
 </body>
