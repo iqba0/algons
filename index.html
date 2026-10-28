@@ -1,0 +1,1020 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Algoritma Dasar: Searching, Sorting, Stack & Queue</title>
+<style>
+:root{
+  --bg:#f3f5fb;--card:#fff;--ink:#1e293b;--muted:#64748b;--line:#e2e8f0;--navy:#0f1d3d;
+  --accent:#2563eb;--accent-soft:#e8efff;
+  --ok:#16a34a;--ok-soft:#dcfce7;--bad:#e11d48;--bad-soft:#ffe4e9;--warn:#d97706;--warn-soft:#fef3c7;
+  --vio:#7c3aed;--vio-soft:#ede9fe;
+  --r:14px;--shadow:0 1px 2px rgba(15,29,61,.06),0 8px 24px rgba(15,29,61,.06);
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.65 system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif}
+button,input,select,textarea{font:inherit;color:inherit}
+h1,h2,h3,h4{line-height:1.25;margin:0 0 .5em;color:var(--navy)}
+h3{font-size:1.15rem}
+p{margin:.4em 0 .8em}
+ul,ol{margin:.3em 0 .8em;padding-left:1.3em}
+li{margin:.25em 0}
+.app{max-width:1080px;margin:0 auto;padding:14px}
+
+/* header */
+.top{background:linear-gradient(135deg,#0f1d3d 0%,#1e3a8a 100%);color:#fff;border-radius:18px;padding:16px 22px;display:flex;flex-wrap:wrap;gap:14px;align-items:center;justify-content:space-between;box-shadow:var(--shadow)}
+.brand{display:flex;gap:12px;align-items:center}
+.logo{width:46px;height:46px;border-radius:12px;background:rgba(255,255,255,.14);display:grid;place-items:center;font-size:24px}
+.brand h1{color:#fff;font-size:1.25rem;margin:0}
+.brand p{margin:0;color:#c7d2fe;font-size:.85rem}
+.who{display:flex;gap:16px;align-items:center;flex-wrap:wrap}
+.who label{font-size:.78rem;color:#c7d2fe;display:block}
+.who input{border:1px solid rgba(255,255,255,.3);background:rgba(255,255,255,.1);color:#fff;border-radius:10px;padding:7px 10px;width:190px}
+.who input::placeholder{color:#a5b4fc}
+.prog{min-width:170px}
+.prog .t{font-size:.78rem;color:#c7d2fe}
+.prog .b{height:8px;border-radius:99px;background:rgba(255,255,255,.2);overflow:hidden;margin-top:4px}
+.prog .b i{display:block;height:100%;background:linear-gradient(90deg,#34d399,#22d3ee);border-radius:99px;transition:width .5s}
+
+/* nav */
+nav{display:flex;gap:6px;overflow-x:auto;padding:12px 2px 6px;scrollbar-width:thin}
+nav button{flex:0 0 auto;border:1px solid var(--line);background:#fff;border-radius:99px;padding:7px 14px;cursor:pointer;font-size:.9rem;white-space:nowrap;transition:.15s}
+nav button:hover{border-color:var(--accent)}
+nav button.on{background:var(--navy);color:#fff;border-color:var(--navy)}
+nav .dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--ok);margin-left:6px}
+
+/* generic */
+.panel{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:18px 20px;margin:12px 0;box-shadow:var(--shadow)}
+.panel.soft{background:var(--accent-soft);border-color:transparent;box-shadow:none}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.grid2>.panel{margin:0}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+@media(max-width:760px){.grid2,.grid3{grid-template-columns:1fr}.who input{width:150px}}
+.btn{border:1px solid var(--line);background:#fff;border-radius:10px;padding:8px 14px;cursor:pointer;font-weight:600;font-size:.92rem;transition:.15s}
+.btn:hover:not(:disabled){border-color:var(--accent);color:var(--accent)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn.primary:hover:not(:disabled){filter:brightness(1.08);color:#fff}
+.btn.big{padding:11px 20px;font-size:1rem}
+.btn.danger{color:var(--bad)}
+.btn.good{background:var(--ok);border-color:var(--ok);color:#fff}
+.btn.good:hover:not(:disabled){color:#fff;filter:brightness(1.08)}
+.btn.bad{background:var(--bad);border-color:var(--bad);color:#fff}
+.btn.bad:hover:not(:disabled){color:#fff;filter:brightness(1.08)}
+button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visible{outline:3px solid #93c5fd;outline-offset:2px}
+.chip{display:inline-block;background:var(--accent-soft);color:var(--accent);border-radius:99px;padding:2px 10px;font-size:.8rem;font-weight:700}
+.muted{color:var(--muted)}
+.sec{margin:26px 0 8px}
+
+/* hero */
+.hero{display:flex;gap:20px;align-items:center;justify-content:space-between;background:#fff;border:1px solid var(--line);border-radius:18px;padding:24px;margin-top:12px;box-shadow:var(--shadow)}
+.hero h2{font-size:1.6rem}
+.ring{flex:0 0 auto;text-align:center}
+.ring svg{display:block}
+.ring .n{font-size:1.4rem;font-weight:800;color:var(--navy)}
+@media(max-width:700px){.hero{flex-direction:column;text-align:center}}
+.path{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+@media(max-width:860px){.path{grid-template-columns:1fr 1fr}}
+@media(max-width:560px){.path{grid-template-columns:1fr}}
+.tcard{background:#fff;border:1px solid var(--line);border-top:5px solid var(--c,#2563eb);border-radius:var(--r);padding:16px;cursor:pointer;text-align:left;transition:.18s;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:6px}
+.tcard:hover{transform:translateY(-3px)}
+.tcard .ic{font-size:1.8rem}
+.tcard b{color:var(--navy)}
+.tcard small{color:var(--muted);line-height:1.4}
+.lvdots{display:flex;gap:5px;margin-top:auto;align-items:center}
+.lvdots i{width:22px;height:8px;border-radius:99px;background:var(--line)}
+.lvdots i.ok{background:var(--ok)}
+.lvdots span{font-size:.75rem;color:var(--muted);margin-left:6px}
+.steps3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+@media(max-width:700px){.steps3{grid-template-columns:1fr}}
+.steps3 .panel{margin:0}
+.num{display:inline-grid;place-items:center;width:30px;height:30px;border-radius:50%;background:var(--navy);color:#fff;font-weight:700;margin-bottom:6px}
+table.cmp{width:100%;border-collapse:collapse;font-size:.92rem;background:#fff;border-radius:12px;overflow:hidden}
+table.cmp th,table.cmp td{border:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top}
+table.cmp th{background:#f1f5f9;color:var(--navy)}
+.tblwrap{overflow-x:auto}
+
+/* topic header */
+.thead{background:#fff;border:1px solid var(--line);border-left:8px solid var(--accent);border-radius:var(--r);padding:16px 20px;display:flex;gap:14px;align-items:center;margin-top:8px;box-shadow:var(--shadow)}
+.thead .ic{font-size:2.2rem}
+.thead h2{margin:0;font-size:1.4rem}
+.thead p{margin:0;color:var(--muted)}
+.tabs{display:flex;gap:6px;margin:14px 0 4px;flex-wrap:wrap}
+.tabs button{border:0;background:#e9edf6;border-radius:10px;padding:9px 16px;cursor:pointer;font-weight:600;color:#475569}
+.tabs button.on{background:var(--accent);color:#fff}
+.seg{display:inline-flex;background:#e9edf6;border-radius:10px;padding:3px;gap:2px;margin-bottom:10px;flex-wrap:wrap}
+.seg button{border:0;background:transparent;border-radius:8px;padding:6px 14px;cursor:pointer;font-weight:600;color:#475569;font-size:.9rem}
+.seg button.on{background:#fff;color:var(--accent);box-shadow:0 1px 3px rgba(0,0,0,.12)}
+
+/* concept */
+.goal{display:flex;gap:10px;flex-wrap:wrap;margin-top:6px}
+.goal span{background:var(--accent-soft);color:var(--accent);border-radius:8px;padding:4px 10px;font-size:.88rem;font-weight:600}
+.callout{background:var(--warn-soft);border-color:#fde68a}
+ol.steps{list-style:none;counter-reset:s;padding:0}
+ol.steps li{counter-increment:s;position:relative;padding:8px 10px 8px 46px;margin:8px 0;background:#f8fafc;border-radius:10px}
+ol.steps li::before{content:counter(s);position:absolute;left:10px;top:50%;transform:translateY(-50%);width:26px;height:26px;border-radius:50%;background:var(--accent);color:#fff;display:grid;place-items:center;font-weight:700;font-size:.85rem}
+.plus li::marker{content:"✔  ";color:var(--ok)}
+.minus li::marker{content:"✖  ";color:var(--bad)}
+.ilus{display:flex;flex-direction:column;gap:14px}
+.ilus .fr{border:1px dashed #cbd5e1;border-radius:12px;padding:10px 12px;background:#fcfdff}
+.ilus .cap{font-size:.9rem;color:#334155;margin-top:4px}
+.ilus .row3{display:flex;gap:16px;flex-wrap:wrap;justify-content:center}
+.ilus .row3>div{text-align:center;flex:1 1 140px}
+.tip{border-left:4px solid var(--warn);background:var(--warn-soft);padding:8px 12px;border-radius:0 10px 10px 0;margin:8px 0}
+
+/* cells + bars */
+.stage{background:#fff;border:1px solid var(--line);border-radius:var(--r);padding:16px 8px;overflow-x:auto}
+.cells{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+.cw{display:flex;flex-direction:column;align-items:center;gap:3px;min-width:46px}
+.ptr{min-height:20px;font-size:.72rem;font-weight:800;color:var(--accent);letter-spacing:.02em;white-space:nowrap}
+.idx{font-size:.72rem;color:var(--muted)}
+.cell,.sw{border:2px solid #cbd5e1;background:#fff;border-radius:10px}
+.cell{min-width:46px;height:46px;display:grid;place-items:center;font-weight:800;font-size:1.05rem;transition:all .25s}
+.cells.mini .cell{min-width:34px;height:34px;font-size:.9rem}
+.cells.mini .cw{min-width:34px}
+.cells.mini{gap:5px}
+.sw{display:inline-block;width:16px;height:16px;border-radius:5px;vertical-align:-3px;margin-right:6px;border-width:2px}
+.cell.cmp,.sw.cmp,.bar.cmp{border-color:#f59e0b;background:#fef3c7}
+.cell.found,.sw.found,.bar.found{border-color:var(--ok);background:var(--ok-soft);color:#14532d}
+.cell.dim,.sw.dim,.bar.dim{opacity:.4;background:#f1f5f9}
+.cell.range,.sw.range,.bar.range{border-color:#93c5fd;background:var(--accent-soft)}
+.cell.mid,.sw.mid,.bar.mid{border-color:var(--accent);background:#bfdbfe;transform:translateY(-4px)}
+.cell.sorted,.sw.sorted,.bar.sorted{border-color:var(--ok);background:var(--ok-soft)}
+.cell.swap,.sw.swap,.bar.swap{border-color:var(--bad);background:var(--bad-soft)}
+.cell.min,.sw.min,.bar.min{border-color:var(--vio);background:var(--vio-soft)}
+.cell.hid{background:#334155;border-color:#334155;color:#94a3b8}
+.cell.clk,.bar.clk{cursor:pointer}
+.cell.clk:hover,.bar.clk:hover{filter:brightness(.95);transform:translateY(-2px)}
+.bars{display:flex;align-items:flex-end;justify-content:center;gap:8px;min-height:200px}
+.bw{display:flex;flex-direction:column;align-items:center;gap:3px;flex:1 1 0;max-width:68px;min-width:30px}
+.bar{width:100%;border:2px solid #94a3b8;background:#e2e8f0;border-radius:8px 8px 4px 4px;display:flex;justify-content:center;align-items:flex-start;font-weight:800;padding-top:4px;transition:all .25s}
+.bars.mini{min-height:110px;gap:5px}
+.bars.mini .bw{max-width:44px}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:.82rem;color:#475569;margin:8px 2px}
+.msgbox{background:var(--accent-soft);border-left:5px solid var(--accent);border-radius:0 12px 12px 0;padding:14px 16px;margin:8px 0;min-height:62px}
+.msgbox.ok{background:var(--ok-soft);border-color:var(--ok)}
+.msgbox.bad{background:var(--bad-soft);border-color:var(--bad)}
+.stats{font-size:.88rem;color:#334155;font-weight:600;margin:4px 2px}
+.ctrl{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:8px}
+.ctrl .spd{font-size:.85rem;color:var(--muted);margin-left:auto}
+.ctrl select{border:1px solid var(--line);border-radius:8px;padding:5px 8px;background:#fff}
+.stepno{font-size:.82rem;color:var(--muted)}
+.cfg{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:10px}
+.cfg select,.cfg input{border:1px solid var(--line);border-radius:8px;padding:6px 10px;background:#fff}
+
+/* stack & queue */
+.split{display:grid;grid-template-columns:minmax(220px,300px) 1fr;gap:16px;align-items:start}
+@media(max-width:700px){.split{grid-template-columns:1fr}}
+.stk{display:flex;flex-direction:column;gap:5px;align-items:center;padding:10px;background:#fff;border:1px solid var(--line);border-radius:var(--r)}
+.stk .slot{position:relative;width:170px;height:42px}
+.stk.mini .slot{width:100px;height:30px}
+.stk.mini{padding:6px;gap:3px}
+.itm{width:100%;height:100%;border-radius:8px;border:2px solid var(--accent);background:var(--accent-soft);display:grid;place-items:center;font-weight:800;animation:pop .25s}
+.itm.ghost{border:2px dashed #cbd5e1;background:transparent}
+.itm.hl{background:#fde68a;border-color:var(--warn)}
+.itm.out{background:var(--bad-soft);border-color:var(--bad)}
+.topmk{position:absolute;left:calc(100% + 8px);top:50%;transform:translateY(-50%);font-size:.75rem;font-weight:800;color:var(--bad);white-space:nowrap}
+.stk.mini .topmk{font-size:.65rem}
+.stk .base{width:190px;height:8px;background:#94a3b8;border-radius:4px;font-size:0;margin-top:2px}
+.stk.mini .base{width:116px}
+.que{display:flex;flex-wrap:wrap;gap:6px;align-items:flex-start;padding:12px;background:#fff;border:1px solid var(--line);border-radius:var(--r);justify-content:center}
+.qs{display:flex;flex-direction:column;align-items:center;gap:4px;width:58px}
+.que.mini .qs{width:62px}.que.mini .qs .lbl{font-size:.62rem}
+.qs .itm{width:58px;height:46px}
+.que.mini .qs .itm{width:42px;height:34px;font-size:.85rem}
+.qs .lbl{font-size:.68rem;font-weight:800;color:var(--bad);min-height:16px;text-align:center;line-height:1.1}
+.qdir{width:100%;display:flex;justify-content:space-between;font-size:.78rem;color:var(--muted);font-weight:700}
+@keyframes pop{from{transform:scale(.6);opacity:0}to{transform:scale(1);opacity:1}}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+.shake{animation:shake .3s}
+.panel.inline{margin:0}
+.ops{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0}
+.ops input{width:90px;border:1px solid var(--line);border-radius:10px;padding:8px 10px}
+.status{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0}
+.status span{background:#f1f5f9;border-radius:8px;padding:3px 10px;font-size:.85rem;font-weight:600}
+.status span.on{background:var(--warn-soft);color:#92400e}
+.log{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.82rem;background:#0f172a;color:#e2e8f0;border-radius:10px;padding:10px 12px;min-height:92px;max-height:160px;overflow:auto}
+.log div{padding:1px 0}
+.log .e{color:#fda4af}
+
+/* game */
+.strip{position:relative;height:22px;background:#e2e8f0;border-radius:99px;overflow:hidden;margin:10px 0 2px}
+.strip .rng{position:absolute;top:0;bottom:0;background:linear-gradient(90deg,#60a5fa,#2563eb);border-radius:99px;transition:all .35s}
+.striplab{display:flex;justify-content:space-between;font-size:.78rem;color:var(--muted)}
+.hist{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.hist span{background:#f1f5f9;border-radius:8px;padding:2px 9px;font-size:.84rem}
+
+/* quiz */
+.lvl{border:1px solid var(--line);border-radius:var(--r);padding:16px;background:#fff;display:flex;flex-direction:column;gap:6px;box-shadow:var(--shadow)}
+.lvl.lock{opacity:.6;background:#f8fafc}
+.lvl .big{font-size:1.8rem}
+.lvl .sc{font-weight:700}
+.qhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.dots{display:flex;gap:6px;margin-bottom:10px}
+.dots i{flex:1;height:6px;border-radius:99px;background:var(--line)}
+.dots i.cur{background:var(--accent)}
+.dots i.ok{background:var(--ok)}
+.dots i.no{background:var(--bad)}
+.qtext{font-size:1.08rem;font-weight:600;color:var(--navy)}
+.opts{display:flex;flex-direction:column;gap:8px;margin:10px 0}
+.opt{display:flex;gap:10px;align-items:flex-start;text-align:left;border:2px solid var(--line);background:#fff;border-radius:12px;padding:10px 12px;cursor:pointer;transition:.15s}
+.opt:hover:not(:disabled){border-color:var(--accent);background:var(--accent-soft)}
+.opt .k{flex:0 0 auto;width:26px;height:26px;border-radius:50%;background:#e9edf6;display:grid;place-items:center;font-weight:800;font-size:.82rem}
+.opt.ok{border-color:var(--ok);background:var(--ok-soft)}
+.opt.ok .k{background:var(--ok);color:#fff}
+.opt.no{border-color:var(--bad);background:var(--bad-soft)}
+.opt.no .k{background:var(--bad);color:#fff}
+.opt:disabled{cursor:default}
+.ans{display:flex;gap:8px;margin:10px 0;flex-wrap:wrap}
+.ans input{flex:1 1 200px;border:2px solid var(--line);border-radius:12px;padding:10px 12px}
+.fb{border-radius:12px;padding:10px 14px;margin:8px 0}
+.fb.ok{background:var(--ok-soft);border-left:5px solid var(--ok)}
+.fb.no{background:var(--bad-soft);border-left:5px solid var(--bad)}
+.score{font-size:3rem;font-weight:800;color:var(--navy);line-height:1}
+.center{text-align:center}
+.badge{display:inline-block;border-radius:99px;padding:2px 10px;font-size:.78rem;font-weight:700}
+.badge.ok{background:var(--ok-soft);color:#166534}
+.badge.no{background:var(--bad-soft);color:#9f1239}
+.badge.nol{background:#f1f5f9;color:#64748b}
+textarea.csvbox{width:100%;min-height:120px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.78rem;border:1px solid var(--line);border-radius:10px;padding:8px}
+details{margin:10px 0}
+summary{cursor:pointer;font-weight:700;color:var(--navy)}
+footer{margin:24px 0 8px;text-align:center;color:var(--muted);font-size:.82rem}
+footer label{cursor:pointer}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="top">
+    <div class="brand">
+      <div class="logo" aria-hidden="true">🧠</div>
+      <div><h1>Algoritma Dasar</h1><p>Searching · Sorting · Stack · Queue</p></div>
+    </div>
+    <div class="who">
+      <div><label for="nama">Nama siswa</label><input id="nama" placeholder="Tulis namamu" maxlength="60" autocomplete="off"></div>
+      <div class="prog"><div class="t" id="progText"></div><div class="b"><i id="progBar" style="width:0%"></i></div></div>
+    </div>
+  </header>
+  <nav id="nav" aria-label="Menu materi"></nav>
+  <main id="view"></main>
+  <footer>
+    Materi pembelajaran Informatika · tanpa pemrograman · hasil tersimpan di perangkat ini dan dapat diunduh sebagai CSV<br>
+    <label><input type="checkbox" id="guru"> Mode guru (buka semua level latihan)</label>
+  </footer>
+</div>
+
+<script type="text/plain" id="csvdata">id,topik,level,tipe,pertanyaan,opsi_a,opsi_b,opsi_c,opsi_d,jawaban,penjelasan
+LIN-11,linear,1,pg,Bagaimana cara linear search mencari sebuah data?,Membagi data menjadi dua bagian lalu memeriksa bagian tengah,Memeriksa elemen satu per satu mulai dari yang pertama,Mengurutkan data terlebih dahulu,Langsung melompat ke elemen terakhir,B,Linear search memeriksa elemen secara berurutan dari awal sampai data ditemukan atau semua elemen habis diperiksa.
+LIN-12,linear,1,pg,Apakah data harus terurut agar linear search dapat digunakan?,"Ya, harus terurut naik","Ya, harus terurut turun","Tidak, data boleh dalam urutan apa saja",Hanya jika datanya berupa angka,C,Linear search tidak peduli urutan data. Ia hanya memeriksa satu per satu.
+LIN-13,linear,1,pg,"Data: 4, 9, 2, 7. Kamu mencari angka 2. Berapa elemen yang diperiksa sampai 2 ditemukan?",2,3,4,1,B,"Diperiksa 4 (bukan), 9 (bukan), lalu 2 (ya). Total 3 pemeriksaan."
+LIN-21,linear,2,isian,"Data: 12, 5, 8, 20, 3, 15. Kamu mencari angka 20 dengan linear search. Berapa kali pemeriksaan yang dilakukan sampai 20 ditemukan?",,,,,4,"Diperiksa 12, 5, 8, lalu 20, sehingga ada 4 pemeriksaan."
+LIN-22,linear,2,pg,"Data: 6, 1, 9, 4. Kamu mencari angka 7 (tidak ada di data). Berapa elemen yang harus diperiksa sebelum disimpulkan 'tidak ditemukan'?",1,2,4,0,C,"Karena 7 tidak ada, semua 4 elemen harus diperiksa lebih dulu."
+LIN-23,linear,2,pg,Kapan linear search selesai paling cepat (kasus terbaik)?,Saat target ada di elemen pertama,Saat target ada di elemen terakhir,Saat target tidak ada di data,Saat data sudah terurut,A,"Jika target ada di elemen pertama, cukup 1 pemeriksaan."
+LIN-31,linear,3,isian,Sebuah daftar berisi 100 data. Kamu mencari angka yang ternyata tidak ada di daftar. Berapa banyak pemeriksaan yang dilakukan linear search?,,,,,100,"Untuk memastikan target tidak ada, semua 100 elemen harus diperiksa."
+LIN-32,linear,3,isian,"Data: 5, 7, 3, 7, 1. Linear search mencari angka 7 dan berhenti saat pertama kali menemukannya. Berapa elemen yang diperiksa?",,,,,2,"Diperiksa 5 (bukan), lalu 7 (ya) lalu berhenti. 7 yang kedua tidak sempat diperiksa."
+LIN-33,linear,3,pg,Situasi mana yang PALING cocok memakai linear search dibanding binary search?,Mencari nama di daftar 1 juta nama yang sudah terurut abjad,Mencari angka di 8 data yang urutannya acak,Mencari kata di kamus tebal,Mencari nomor di buku telepon yang terurut,B,"Data sedikit dan tidak terurut. Binary search tidak bisa dipakai, sedangkan linear search sudah cukup cepat untuk 8 data."
+BIN-11,binary,1,pg,Apa syarat utama agar binary search dapat digunakan?,Data berisi angka genap saja,Data sudah terurut,Jumlah data harus genap,Tidak boleh ada angka yang sama,B,"Binary search membuang separuh data berdasarkan perbandingan dengan elemen tengah, sehingga data wajib terurut."
+BIN-12,binary,1,pg,Ide utama binary search adalah...,Memeriksa elemen satu per satu,"Membandingkan target dengan elemen tengah, lalu membuang separuh data",Mengacak data sebelum dicari,Mengurutkan data setelah target ketemu,B,"Setiap langkah, separuh data yang pasti tidak mengandung target dibuang."
+BIN-13,binary,1,pg,Kegiatan mana yang paling mirip dengan binary search?,"Membuka kamus di bagian tengah, lalu menentukan kata ada di halaman sebelum atau sesudahnya",Membaca buku dari halaman 1 sampai ketemu,Mencari kunci dengan memeriksa tiap ruangan satu per satu,Mengocok kartu lalu mengambil satu,A,Membuka kamus di tengah lalu memilih sisi kiri atau kanan adalah cara kerja binary search.
+BIN-21,binary,2,isian,"Data terurut (indeks 0 sampai 6): 2, 5, 8, 12, 16, 23, 38. Kamu mencari 23. Elemen tengah yang pertama kali dibandingkan bernilai berapa?",,,,,12,Tengah = (0 + 6) : 2 = 3. Elemen di indeks 3 bernilai 12.
+BIN-22,binary,2,pg,"Pada soal sebelumnya, 23 lebih besar dari 12 (elemen tengah). Bagian mana yang dibuang?","Bagian kanan: 16, 23, 38","Bagian kiri sampai 12: 2, 5, 8, 12",Hanya angka 12,Tidak ada yang dibuang,B,"23 > 12 berarti 23 pasti ada di sebelah kanan 12, sehingga 2, 5, 8, dan 12 dibuang."
+BIN-23,binary,2,pg,"Jika target LEBIH KECIL dari elemen tengah, pencarian dilanjutkan ke...",Bagian kanan,Bagian kiri,Kembali ke awal data dari nol,"Berhenti, target pasti tidak ada",B,Data terurut naik. Nilai yang lebih kecil dari elemen tengah hanya mungkin ada di sebelah kirinya.
+BIN-31,binary,3,isian,"Data terurut: 3, 7, 10, 14, 19, 25, 31. Kamu mencari 7 dengan binary search. Berapa kali perbandingan dengan elemen tengah sampai 7 ditemukan?",,,,,2,"Tengah pertama = 14. 7 < 14, lanjut ke kiri (3, 7, 10). Tengah kedua = 7, ditemukan. Total 2 perbandingan."
+BIN-32,binary,3,pg,Sebuah data terurut berisi 1.000 elemen. Perkiraan paling banyak perbandingan pada binary search adalah...,1.000,500,Sekitar 10,Sekitar 100,C,"Setiap langkah membuang separuh data: 1000, 500, 250, 125, ... sampai tersisa 1 hanya butuh sekitar 10 langkah."
+BIN-33,binary,3,pg,"Mengapa binary search tidak boleh langsung dipakai pada data 9, 2, 7, 4, 1?",Datanya terlalu sedikit,"Data belum terurut, sehingga membuang separuh data bisa ikut membuang target",Jumlah datanya ganjil,Tidak ada elemen tengah,B,"Tanpa urutan, perbandingan dengan elemen tengah tidak memberi petunjuk ke kiri atau ke kanan."
+BUB-11,bubble,1,pg,Bubble sort bekerja dengan cara...,Membandingkan dua elemen bersebelahan dan menukarnya jika urutannya salah,Membandingkan elemen pertama dengan elemen terakhir,Mencari elemen terkecil lalu memindahkannya,Membagi data menjadi dua bagian,A,Bubble sort membandingkan pasangan bersebelahan dan menukarnya bila urutannya salah.
+BUB-12,bubble,1,pg,"Pada urutan naik (kecil ke besar), setelah pass pertama bubble sort selesai, elemen terbesar berada di...",Posisi paling awal,Posisi tengah,Posisi paling akhir,Tidak bisa dipastikan,C,Angka terbesar 'menggelembung' ke kanan sampai ke posisi akhir pada pass pertama.
+BUB-13,bubble,1,pg,Dua elemen bersebelahan: 5 dan 2. Data diurutkan naik. Apa yang dilakukan bubble sort?,"Menukarnya, menjadi 2 dan 5",Membiarkannya,Menghapus salah satunya,Menjumlahkannya,A,"5 > 2, urutannya salah untuk urutan naik, jadi ditukar."
+BUB-21,bubble,2,pg,"Data: 4, 3, 1, 2 (urut naik). Bagaimana kondisi data setelah pass pertama bubble sort?","3, 1, 2, 4","1, 2, 3, 4","3, 4, 1, 2","1, 3, 2, 4",A,"(4,3) tukar menjadi 3,4,1,2. (4,1) tukar menjadi 3,1,4,2. (4,2) tukar menjadi 3,1,2,4."
+BUB-22,bubble,2,isian,"Data: 4, 3, 1, 2. Berapa kali pertukaran terjadi pada pass pertama bubble sort (urut naik)?",,,,,3,"Ketiga pasangan (4,3), (4,1), dan (4,2) semuanya ditukar, jadi 3 pertukaran."
+BUB-23,bubble,2,isian,"Data sudah urut: 1, 2, 3, 4, 5. Pada satu pass bubble sort, berapa kali pertukaran terjadi?",,,,,0,"Tidak ada pasangan yang urutannya salah, jadi tidak ada pertukaran. Ini tanda data sudah terurut."
+BUB-31,bubble,3,isian,"Urutkan naik dengan bubble sort. Data awal: 5, 1, 4, 2, 8. Tulis kondisi data setelah pass pertama (pisahkan dengan koma).",,,,,"1,4,2,5,8","(5,1) tukar menjadi 1,5,4,2,8. (5,4) tukar menjadi 1,4,5,2,8. (5,2) tukar menjadi 1,4,2,5,8. (5,8) tidak ditukar."
+BUB-32,bubble,3,isian,"Lanjutkan dari hasil pass pertama pada soal sebelumnya (1, 4, 2, 5, 8). Tulis kondisi data setelah pass kedua (pisahkan dengan koma).",,,,,"1,2,4,5,8","(1,4) tetap. (4,2) ditukar menjadi 1,2,4,5,8. (4,5) tetap. Pasangan (5,8) tidak diperiksa lagi karena 8 sudah di posisi akhir."
+BUB-33,bubble,3,isian,"Bubble sort pada 5 data yang urutannya terbalik sempurna (tanpa optimasi). Pass 1 membandingkan 4 pasangan, pass 2 membandingkan 3 pasangan, dan seterusnya. Berapa total perbandingan sampai selesai?",,,,,10,4 + 3 + 2 + 1 = 10 perbandingan. Rumus umum: n(n-1)/2 = 5 x 4 / 2 = 10.
+SEL-11,selection,1,pg,Selection sort bekerja dengan cara...,"Memilih elemen terkecil dari bagian yang belum terurut, lalu menaruhnya di posisi paling depan bagian itu",Menukar dua elemen bersebelahan berulang kali,Membagi data menjadi dua bagian sama besar,Menumpuk data seperti tumpukan piring,A,"Setiap putaran, selection sort memilih nilai terkecil dari sisa data dan menaruhnya di posisi yang tepat."
+SEL-12,selection,1,pg,"Pada urutan naik, apa yang dicari selection sort di setiap putaran?",Elemen terbesar,Elemen terkecil dari bagian yang belum terurut,Elemen tepat di tengah,Elemen yang nilainya sama,B,Elemen terkecil dari bagian yang belum terurut dipindahkan ke depan.
+SEL-13,selection,1,pg,"Kamu mengurutkan kartu dengan cara: cari kartu terkecil di tanganmu, taruh paling kiri, lalu ulangi untuk kartu yang tersisa. Cara ini mirip algoritma...",Selection sort,Linear search,Stack,Queue,A,"Memilih yang terkecil lalu menaruhnya di depan, berulang, adalah selection sort."
+SEL-21,selection,2,isian,"Data: 64, 25, 12, 22, 11 (urut naik). Berapa nilai elemen terkecil yang ditemukan pada putaran pertama?",,,,,11,"Dari seluruh data, nilai terkecil adalah 11 (di indeks 4)."
+SEL-22,selection,2,pg,"Data: 64, 25, 12, 22, 11. Pada putaran pertama, 11 ditukar dengan elemen di posisi pertama (64). Bagaimana kondisi data setelahnya?","11, 25, 12, 22, 64","11, 64, 25, 12, 22","25, 12, 22, 11, 64","11, 12, 22, 25, 64",A,"Hanya 64 dan 11 yang bertukar tempat, elemen lain tidak berpindah."
+SEL-23,selection,2,isian,"Lanjutkan dari kondisi 11, 25, 12, 22, 64. Tulis kondisi data setelah putaran kedua (pisahkan dengan koma).",,,,,"11,12,25,22,64","Bagian belum terurut: 25, 12, 22, 64. Terkecilnya 12, ditukar dengan 25 menjadi 11, 12, 25, 22, 64."
+SEL-31,selection,3,isian,"Data: 3, 1, 2 (urut naik). Berapa total pertukaran yang dilakukan selection sort sampai data terurut?",,,,,2,"Putaran 1: 1 ditukar dengan 3 menjadi 1,3,2. Putaran 2: 2 ditukar dengan 3 menjadi 1,2,3. Total 2 pertukaran."
+SEL-32,selection,3,isian,"Selection sort pada 6 data. Putaran 1 membandingkan 5 elemen, putaran 2 membandingkan 4, dan seterusnya sampai 1. Berapa total perbandingan?",,,,,15,5 + 4 + 3 + 2 + 1 = 15. Rumus: n(n-1)/2 = 6 x 5 / 2 = 15.
+SEL-33,selection,3,pg,Apa perbedaan utama bubble sort dan selection sort?,"Bubble sort menukar elemen bersebelahan berkali-kali, sedangkan selection sort menukar sekali per putaran setelah menemukan yang terkecil",Keduanya sama persis,Selection sort hanya bisa untuk huruf,Bubble sort tidak memakai perbandingan,A,"Selection sort mencari terkecil dulu, baru menukar satu kali per putaran, sehingga pertukarannya lebih sedikit."
+STK-11,stack,1,pg,Stack bekerja dengan prinsip...,FIFO (First In First Out),LIFO (Last In First Out),Acak,Selalu terurut,B,"Elemen yang terakhir masuk akan pertama keluar, seperti tumpukan piring."
+STK-12,stack,1,pg,Operasi untuk MENAMBAH elemen ke stack disebut...,pop,push,peek,enqueue,B,push menambah elemen di puncak stack. pop menghapus elemen puncak.
+STK-13,stack,1,pg,Contoh benda sehari-hari yang paling mirip dengan stack adalah...,Tumpukan piring,Antrean di kasir,Barisan siswa saat upacara,Rel kereta api lurus,A,Piring yang terakhir ditaruh paling atas dan paling dulu diambil.
+STK-21,stack,2,pg,"Stack kosong. Dilakukan: push 5, push 8, push 2, lalu pop. Elemen paling atas (top) sekarang adalah...",2,5,8,Stack kosong,C,"Setelah push 5, 8, 2 isinya (bawah ke atas): 5, 8, 2. pop mengeluarkan 2, sehingga top menjadi 8."
+STK-22,stack,2,isian,"Stack kosong. Dilakukan: push 4, push 9, pop, pop, push 1. Berapa nilai elemen paling atas (top) sekarang?",,,,,1,"push 4 lalu push 9, pop mengeluarkan 9, pop mengeluarkan 4, stack kosong lagi. push 1 membuat top = 1."
+STK-23,stack,2,pg,Apa fungsi operasi peek pada stack?,Membaca elemen paling atas tanpa menghapusnya,Menghapus elemen paling atas,Menambah elemen baru,Mengosongkan seluruh stack,A,"peek hanya melihat top, isi stack tidak berubah."
+STK-31,stack,3,isian,"Riwayat halaman browser bekerja seperti stack. Kamu membuka halaman A, lalu B, lalu C. Kamu menekan tombol Back dua kali. Halaman apa yang tampil sekarang? (tulis satu huruf)",,,,,A,"Isi stack: A, B, C. Back pertama mengeluarkan C (tampil B). Back kedua mengeluarkan B (tampil A)."
+STK-32,stack,3,pg,Sebuah stack berkapasitas 3 sudah berisi 3 elemen. Lalu dilakukan push lagi. Kondisi apa yang terjadi?,Underflow,Overflow,Push berhasil dan kapasitas bertambah otomatis,Terjadi peek,B,Overflow terjadi saat menambah elemen ke stack yang sudah penuh. Underflow terjadi saat pop pada stack kosong.
+STK-33,stack,3,isian,"Stack kosong. Dilakukan: push 1, push 2, push 3, pop, push 4, pop, pop. Tulis urutan angka yang keluar dari tiga operasi pop tersebut (pisahkan dengan koma).",,,,,"3,4,2","Pop pertama mengeluarkan 3 (isi: 1,2). push 4 (isi: 1,2,4). Pop kedua mengeluarkan 4. Pop ketiga mengeluarkan 2. Sisa: 1."
+QUE-11,queue,1,pg,Queue (antrean) bekerja dengan prinsip...,LIFO (Last In First Out),FIFO (First In First Out),Acak,Selalu menurun,B,Yang pertama masuk antrean adalah yang pertama dilayani.
+QUE-12,queue,1,pg,Operasi untuk MENAMBAH elemen ke queue disebut...,push,pop,enqueue,dequeue,C,enqueue memasukkan elemen di belakang antrean. dequeue mengeluarkan elemen dari depan.
+QUE-13,queue,1,pg,"Pada queue, elemen yang dikeluarkan (dequeue) berasal dari...",Belakang antrean,Depan antrean,Tengah antrean,Posisi acak,B,"Elemen paling depan (front) adalah yang paling lama menunggu, sehingga dilayani lebih dulu."
+QUE-21,queue,2,pg,"Queue kosong. Dilakukan: enqueue 3, enqueue 7, enqueue 1, lalu dequeue. Elemen paling depan sekarang adalah...",1,3,7,Queue kosong,C,"Antrean awal: 3, 7, 1. dequeue mengeluarkan 3, sehingga depan menjadi 7."
+QUE-22,queue,2,isian,Lanjutan soal sebelumnya (antrean berisi 7 dan 1). Tulis isi antrean dari depan ke belakang (pisahkan dengan koma).,,,,,"7,1","Setelah 3 keluar, sisa antrean dari depan ke belakang: 7, 1."
+QUE-23,queue,2,pg,"Angka 1, 2, 3 dimasukkan berurutan ke sebuah stack dan ke sebuah queue. Lalu masing-masing dikeluarkan satu elemen. Hasilnya...","Stack mengeluarkan 1, queue mengeluarkan 3","Stack mengeluarkan 3, queue mengeluarkan 1",Keduanya mengeluarkan 1,Keduanya mengeluarkan 3,B,"Stack (LIFO) mengeluarkan yang terakhir masuk, yaitu 3. Queue (FIFO) mengeluarkan yang pertama masuk, yaitu 1."
+QUE-31,queue,3,isian,"Queue kosong. Dilakukan: enqueue A, enqueue B, dequeue, enqueue C, enqueue D, dequeue. Tulis isi antrean dari depan ke belakang (pisahkan dengan koma).",,,,,"C,D","A, B masuk lalu A keluar (sisa B). C, D masuk (B, C, D). B keluar. Sisa: C, D."
+QUE-32,queue,3,isian,"Antrean printer berisi dokumen D1, D2, D3, D4 (dari depan ke belakang). Setelah 2 dokumen selesai dicetak, dokumen D3 berada di posisi ke berapa dalam antrean? (posisi depan = 1)",,,,,1,"D1 dan D2 sudah keluar. Sisa antrean: D3, D4. D3 berada paling depan, yaitu posisi 1."
+QUE-33,queue,3,pg,Kasus mana yang PALING tepat memakai struktur data queue?,Fitur Undo (Ctrl+Z) pada editor teks,Tombol Back pada browser,Antrean dokumen yang menunggu dicetak printer,Mengecek keseimbangan tanda kurung,C,Dokumen dicetak sesuai urutan kedatangan (FIFO). Undo dan Back adalah contoh stack.
+</script>
+<script>
+(function(){
+'use strict';
+
+/* ============ Util ============ */
+const $=(s,r=document)=>r.querySelector(s);
+const $$=(s,r=document)=>Array.from(r.querySelectorAll(s));
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fmt=s=>esc(s).replace(/\n/g,'<br>');
+const rnd=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
+function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=rnd(0,i);[a[i],a[j]]=[a[j],a[i]]}return a}
+function randArr(n,min,max,sorted){const s=new Set();while(s.size<n)s.add(rnd(min,max));let a=Array.from(s);return sorted?a.sort((x,y)=>x-y):a}
+const cleaners=[];
+function onLeave(f){cleaners.push(f)}
+function cleanup(){cleaners.splice(0).forEach(f=>{try{f()}catch(e){}})}
+
+/* ============ CSV ============ */
+function parseCSV(text){
+  text=String(text||'').replace(/^﻿/,'');
+  const rows=[];let row=[],f='',q=false;
+  for(let i=0;i<text.length;i++){
+    const c=text[i];
+    if(q){ if(c==='"'){ if(text[i+1]==='"'){f+='"';i++} else q=false } else f+=c }
+    else if(c==='"') q=true;
+    else if(c===','){row.push(f);f=''}
+    else if(c==='\n'||c==='\r'){ if(c==='\r'&&text[i+1]==='\n')i++; row.push(f);f=''; if(row.some(x=>x!==''))rows.push(row); row=[] }
+    else f+=c;
+  }
+  row.push(f); if(row.some(x=>x!==''))rows.push(row);
+  if(!rows.length)return[];
+  const head=rows[0].map(h=>h.trim().toLowerCase());
+  return rows.slice(1).map(r=>{const o={};head.forEach((h,i)=>o[h]=(r[i]==null?'':r[i]));return o});
+}
+function csvCell(v){v=String(v==null?'':v);return /[",\n\r]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v}
+function toCSV(cols,rows){return [cols.join(',')].concat(rows.map(r=>cols.map(c=>csvCell(r[c])).join(','))).join('\n')}
+function download(name,text){
+  try{const b=new Blob(['﻿'+text],{type:'text/csv;charset=utf-8'});const u=URL.createObjectURL(b);
+  const a=document.createElement('a');a.href=u;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),3000)}catch(e){}
+}
+
+/* ============ Konten materi ============ */
+const ORDER=['linear','binary','bubble','selection','stack','queue'];
+const LEVELS={1:{nama:'Level 1 · Pemula',desc:'Memahami konsep dasar',ikon:'🌱'},2:{nama:'Level 2 · Menengah',desc:'Menelusuri langkah dan hasil',ikon:'🌿'},3:{nama:'Level 3 · Tantangan',desc:'Menganalisis dan menghitung',ikon:'🌳'}};
+const LULUS=60;
+
+const T={
+linear:{nama:'Linear Search',ikon:'🔍',warna:'#2563eb',tag:'Periksa satu per satu dari depan sampai ketemu.',
+ tujuan:['Menjelaskan cara kerja linear search','Menelusuri pencarian langkah demi langkah','Menentukan jumlah pemeriksaan (terbaik dan terburuk)'],
+ apa:'<p><b>Linear search</b> (pencarian linear) adalah cara mencari data dengan memeriksa elemen <b>satu per satu</b>, mulai dari elemen pertama, sampai data yang dicari (disebut <b>target</b>) ditemukan atau semua elemen sudah diperiksa.</p><p>Data <b>tidak perlu terurut</b>. Itu sebabnya linear search paling sederhana dan paling mudah dipahami.</p>',
+ analogi:'Kamu mencari kaus kaki merah di dalam laci. Kamu mengambil satu pasang, melihat warnanya, lalu lanjut ke pasang berikutnya sampai ketemu yang merah. Kalau laci sudah habis dan tidak ada yang merah, berarti memang tidak ada.',
+ langkah:['Mulai dari elemen <b>pertama</b>.','<b>Bandingkan</b> elemen itu dengan target.','Jika <b>sama</b>, pencarian selesai: data ditemukan.','Jika <b>berbeda</b>, pindah ke elemen berikutnya.','Jika elemen sudah habis dan belum ketemu, berarti target <b>tidak ada</b>.'],
+ plus:['Mudah dipahami dan dilakukan','Data boleh dalam urutan apa saja','Cocok untuk data yang sedikit'],
+ minus:['Lambat bila datanya sangat banyak','Pada kasus terburuk, semua elemen harus diperiksa'],
+ ingat:['Kasus terbaik: target ada di elemen pertama, cukup <b>1</b> pemeriksaan.','Kasus terburuk: target di elemen terakhir atau tidak ada, perlu <b>n</b> pemeriksaan (n = banyak data).','Berhenti begitu target ditemukan.']},
+binary:{nama:'Binary Search',ikon:'✂️',warna:'#7c3aed',tag:'Bagi dua, buang separuh, ulangi.',
+ tujuan:['Menjelaskan syarat binary search','Menentukan elemen tengah dan arah pencarian','Membandingkan efisiensi dengan linear search'],
+ apa:'<p><b>Binary search</b> (pencarian biner) mencari data pada kumpulan data yang <b>sudah terurut</b>. Setiap langkah, target dibandingkan dengan <b>elemen tengah</b>. Dari hasil perbandingan itu kita tahu target ada di kiri atau di kanan, sehingga <b>separuh data langsung dibuang</b>.</p><p>Proses diulang pada separuh yang tersisa sampai target ketemu atau data habis.</p>',
+ analogi:'Permainan tebak angka 1 sampai 100. Kamu menebak 50. Temanmu bilang "terlalu kecil", jadi kamu langsung tahu angka itu pasti di 51–100 dan seluruh 1–50 tidak perlu dicek. Menebak di tengah terus-menerus membuat kamu menang dengan cepat.',
+ langkah:['Pastikan data <b>sudah terurut</b> (misalnya dari kecil ke besar).','Tentukan rentang pencarian: dari elemen paling kiri sampai paling kanan.','Cari <b>elemen tengah</b>: (kiri + kanan) ÷ 2, dibulatkan ke bawah.','Bandingkan target dengan elemen tengah. Jika <b>sama</b>, ketemu. Jika target <b>lebih kecil</b>, buang bagian tengah ke kanan. Jika target <b>lebih besar</b>, buang bagian tengah ke kiri.','Ulangi pada rentang yang tersisa sampai ketemu atau rentang habis (tidak ada).'],
+ plus:['Sangat cepat untuk data besar','Setiap langkah membuang separuh data'],
+ minus:['Data wajib terurut lebih dulu','Kurang efisien bila datanya sedikit atau sering berubah'],
+ ingat:['Syarat mutlak: data <b>terurut</b>.','Tabel efisiensi di bawah menunjukkan betapa hematnya binary search.','Linear search = "cek semua", binary search = "bagi dua".']},
+bubble:{nama:'Bubble Sort',ikon:'🫧',warna:'#0d9488',tag:'Tukar tetangga yang salah urutan, angka besar "menggelembung" ke kanan.',
+ tujuan:['Menjelaskan konsep pass dan pertukaran','Menelusuri bubble sort pada data kecil','Menghitung banyak perbandingan'],
+ apa:'<p><b>Bubble sort</b> mengurutkan data dengan membandingkan <b>dua elemen yang bersebelahan</b> dan <b>menukarnya</b> jika urutannya salah. Satu putaran penuh dari kiri ke kanan disebut <b>pass</b>.</p><p>Pada urutan naik, setelah satu pass, angka <b>terbesar</b> sudah berada di ujung kanan, seperti gelembung udara yang naik ke permukaan.</p>',
+ analogi:'Sekelompok siswa berbaris dan ingin diurutkan dari yang pendek ke yang tinggi. Guru hanya boleh membandingkan dua siswa yang berdiri bersebelahan. Jika yang kiri lebih tinggi, keduanya bertukar tempat. Setelah satu putaran, siswa tertinggi pasti sudah di ujung barisan.',
+ langkah:['Mulai dari pasangan pertama (elemen 1 dan 2).','Jika elemen kiri <b>lebih besar</b> dari kanan, <b>tukar</b>. Jika tidak, biarkan.','Geser ke pasangan berikutnya dan ulangi sampai ujung (satu <b>pass</b> selesai).','Angka terbesar kini ada di posisi akhir dan <b>tidak perlu diperiksa lagi</b>.','Ulangi pass untuk bagian yang belum terurut. Berhenti jika satu pass tidak ada pertukaran sama sekali.'],
+ plus:['Sangat mudah dipahami','Bisa berhenti lebih awal bila data sudah urut'],
+ minus:['Banyak perbandingan dan pertukaran','Lambat untuk data yang banyak'],
+ ingat:['Hanya membandingkan elemen yang <b>bersebelahan</b>.','Setelah pass ke-1, elemen terbesar di tempat yang benar. Setelah pass ke-2, dua terbesar, dan seterusnya.','Untuk n data, paling banyak n × (n−1) ÷ 2 perbandingan. Misalnya 5 data → 10.']},
+selection:{nama:'Selection Sort',ikon:'🎯',warna:'#ea580c',tag:'Pilih yang terkecil, taruh di depan, ulangi untuk sisanya.',
+ tujuan:['Menjelaskan konsep bagian terurut dan belum terurut','Menelusuri selection sort pada data kecil','Membedakan selection sort dari bubble sort'],
+ apa:'<p><b>Selection sort</b> mengurutkan data dengan cara <b>memilih</b> elemen terkecil dari bagian yang <b>belum terurut</b>, lalu menukarnya ke posisi paling depan bagian itu. Proses diulang untuk sisa data.</p><p>Di setiap putaran, bagian terurut di kiri bertambah satu elemen.</p>',
+ analogi:'Kamu memegang kartu bernomor di tangan. Kamu cari kartu dengan nomor terkecil, taruh paling kiri di meja. Lalu dari kartu yang tersisa, cari lagi yang terkecil dan taruh di sebelahnya, begitu seterusnya sampai kartu habis.',
+ langkah:['Anggap elemen pertama bagian belum terurut sebagai <b>terkecil sementara</b>.','Periksa <b>semua elemen sisanya</b>. Jika ada yang lebih kecil, catat sebagai terkecil baru.','Setelah semua diperiksa, <b>tukar</b> elemen terkecil dengan elemen pertama bagian belum terurut.','Tandai posisi itu sebagai <b>sudah terurut</b>.','Ulangi untuk bagian yang tersisa sampai semua terurut.'],
+ plus:['Ide sederhana: "pilih yang terkecil"','Pertukaran sedikit (paling banyak n−1 kali)'],
+ minus:['Tetap memeriksa semua sisa data walau data sudah urut','Lambat untuk data yang banyak'],
+ ingat:['Selection sort <b>mencari dulu</b>, baru menukar satu kali per putaran.','Bubble sort menukar tetangga berulang kali.','Untuk n data, banyak perbandingan selalu n × (n−1) ÷ 2. Misalnya 6 data → 15.']},
+stack:{nama:'Stack',ikon:'🥞',warna:'#e11d48',tag:'Tumpukan: yang terakhir masuk, pertama keluar.',
+ tujuan:['Menjelaskan prinsip LIFO','Menggunakan operasi push, pop, dan peek','Mengenali overflow dan underflow'],
+ apa:'<p><b>Stack</b> (tumpukan) adalah struktur data yang menyimpan elemen secara bertumpuk. Elemen hanya boleh ditambah dan diambil dari <b>puncak</b> (top). Prinsipnya <b>LIFO</b>: <i>Last In, First Out</i>, yang terakhir masuk adalah yang pertama keluar.</p>',
+ analogi:'Tumpukan piring di dapur. Piring baru selalu ditaruh di paling atas, dan piring yang diambil juga dari paling atas. Kita tidak bisa menarik piring dari tengah tumpukan tanpa menjatuhkan yang lain.',
+ langkah:['<b>push(x)</b>: menaruh elemen x di puncak stack.','<b>pop()</b>: mengambil dan menghapus elemen di puncak stack.','<b>peek()</b>: melihat elemen puncak tanpa menghapusnya.','<b>isEmpty</b>: apakah stack kosong? <b>isFull</b>: apakah stack penuh?','<b>Overflow</b> = push ke stack penuh. <b>Underflow</b> = pop dari stack kosong.'],
+ plus:['Sederhana dan cepat (hanya bekerja di puncak)','Cocok untuk urusan "kembali ke langkah sebelumnya"'],
+ minus:['Hanya elemen puncak yang bisa diakses','Elemen di dasar harus menunggu yang di atasnya keluar'],
+ ingat:['LIFO: yang terakhir masuk, pertama keluar.','Contoh nyata: tombol <b>Undo</b> (Ctrl+Z), tombol <b>Back</b> di browser, dan tumpukan piring.','Semua operasi terjadi di <b>satu ujung</b> saja: puncak.']},
+queue:{nama:'Queue',ikon:'🚶',warna:'#0284c7',tag:'Antrean: yang pertama masuk, pertama dilayani.',
+ tujuan:['Menjelaskan prinsip FIFO','Menggunakan operasi enqueue dan dequeue','Membedakan queue dari stack'],
+ apa:'<p><b>Queue</b> (antrean) adalah struktur data yang menyimpan elemen berurutan. Elemen baru masuk lewat <b>belakang</b> (rear) dan elemen keluar lewat <b>depan</b> (front). Prinsipnya <b>FIFO</b>: <i>First In, First Out</i>, yang pertama masuk adalah yang pertama keluar.</p>',
+ analogi:'Antrean di kasir minimarket. Pelanggan yang datang lebih dulu dilayani lebih dulu, dan pelanggan baru berdiri di barisan paling belakang. Tidak boleh menyela.',
+ langkah:['<b>enqueue(x)</b>: memasukkan elemen x di <b>belakang</b> antrean.','<b>dequeue()</b>: mengeluarkan elemen di <b>depan</b> antrean.','<b>front</b>: melihat elemen paling depan tanpa mengeluarkannya.','<b>isEmpty</b>: antrean kosong? <b>isFull</b>: antrean penuh?','Dequeue pada antrean kosong adalah kesalahan (underflow).'],
+ plus:['Adil: urutan layanan sesuai urutan kedatangan','Cocok untuk pekerjaan yang harus diproses berurutan'],
+ minus:['Hanya elemen depan yang bisa diambil','Elemen di tengah tidak bisa langsung diakses'],
+ ingat:['FIFO: yang pertama masuk, pertama keluar.','Contoh nyata: antrean printer, antrean tiket, antrean pesan.','Masuk di <b>belakang</b>, keluar di <b>depan</b> (dua ujung berbeda).']}
+};
+
+/* ============ Komponen visual ============ */
+function cellsRow(a,c={},p={},o={}){
+  return `<div class="cells ${o.mini?'mini':''}">`+a.map((v,i)=>`<div class="cw"><div class="ptr">${p[i]||''}</div><div class="cell ${c[i]||''} ${o.click?'clk':''}" ${o.click?`data-i="${i}" role="button" tabindex="0"`:''}>${v}</div><div class="idx">${i}</div></div>`).join('')+`</div>`;
+}
+function barsRow(a,c={},p={},o={}){
+  const mx=Math.max.apply(null,a),H=o.mini?64:150;
+  return `<div class="bars ${o.mini?'mini':''}">`+a.map((v,i)=>`<div class="bw"><div class="bar ${c[i]||''} ${o.click?'clk':''}" ${o.click?`data-i="${i}" role="button" tabindex="0"`:''} style="height:${24+Math.round(v/mx*H)}px"><span>${v}</span></div><div class="idx">${i}</div><div class="ptr">${p[i]||''}</div></div>`).join('')+`</div>`;
+}
+function stackViz(items,cap,o={}){
+  let h=`<div class="stk ${o.mini?'mini':''}">`;
+  for(let k=cap-1;k>=0;k--){
+    const has=k<items.length,top=has&&k===items.length-1;
+    h+=`<div class="slot"><div class="itm ${has?'':'ghost'} ${top&&o.hl?o.hl:''}">${has?items[k]:''}</div>${top?'<span class="topmk">◀ TOP</span>':''}</div>`;
+  }
+  return h+`<div class="base"></div></div>`;
+}
+function queueViz(items,cap,o={}){
+  let h=`<div class="que ${o.mini?'mini':''}"><div class="qdir"><span>◀ keluar (depan)</span><span>masuk (belakang) ◀</span></div>`;
+  for(let k=0;k<cap;k++){
+    const has=k<items.length;let lbl='';
+    if(has){const f=k===0,r=k===items.length-1;lbl=f&&r?'DEPAN=<br>BELAKANG':f?'DEPAN<br>(front)':r?'BELAKANG<br>(rear)':''}
+    h+=`<div class="qs"><div class="itm ${has?'':'ghost'} ${o.hlLast&&has&&k===items.length-1?'hl':''}">${has?items[k]:''}</div><div class="lbl">${lbl}</div></div>`;
+  }
+  return h+`</div>`;
+}
+
+/* ============ Pembuat langkah simulasi ============ */
+function linearSteps(a,t){
+  const S=[],done={};let cnt=0;
+  S.push({stage:cellsRow(a),msg:`Kita mencari angka <b>${t}</b>. Pencarian dimulai dari elemen paling kiri (indeks 0).`,stats:'Pemeriksaan: 0'});
+  for(let i=0;i<a.length;i++){
+    cnt++;
+    const c=Object.assign({},done);c[i]='cmp';
+    S.push({stage:cellsRow(a,c,{[i]:'▼ cek'}),msg:`Periksa indeks <b>${i}</b>: nilainya <b>${a[i]}</b>. Apakah ${a[i]} sama dengan ${t}? ${a[i]===t?'<b>Ya!</b>':'Tidak, lanjut ke elemen berikutnya.'}`,stats:`Pemeriksaan: ${cnt}`});
+    if(a[i]===t){
+      const c2=Object.assign({},done);c2[i]='found';
+      S.push({stage:cellsRow(a,c2,{[i]:'✔ ketemu'}),msg:`🎉 <b>Ditemukan!</b> Angka ${t} ada di indeks <b>${i}</b> setelah <b>${cnt}</b> pemeriksaan.`,stats:`Pemeriksaan: ${cnt}`,ok:1});
+      return S;
+    }
+    done[i]='dim';
+  }
+  S.push({stage:cellsRow(a,done),msg:`Semua elemen sudah diperiksa dan tidak ada yang sama dengan ${t}. Kesimpulan: angka ${t} <b>tidak ada</b> di data (dibutuhkan ${cnt} pemeriksaan).`,stats:`Pemeriksaan: ${cnt}`,bad:1});
+  return S;
+}
+function binarySteps(a,t){
+  const S=[],n=a.length;let lo=0,hi=n-1,cnt=0;const dim={};
+  S.push({stage:cellsRow(a),msg:`Data sudah <b>terurut</b>. Kita mencari <b>${t}</b>. Rentang pencarian awal: seluruh data (indeks 0 sampai ${n-1}).`,stats:'Perbandingan: 0'});
+  while(lo<=hi){
+    const mid=Math.floor((lo+hi)/2);cnt++;
+    const c=Object.assign({},dim);for(let i=lo;i<=hi;i++)c[i]='range';c[mid]='mid';
+    const p={};const lab=(i,x)=>{p[i]=(p[i]?p[i]+'·':'')+x};lab(lo,'L');lab(mid,'M');lab(hi,'R');
+    S.push({kind:'mid',stage:cellsRow(a,c,p),stats:`Perbandingan: ${cnt} · Sisa data: ${hi-lo+1}`,
+      msg:`Rentang indeks <b>${lo}–${hi}</b> (${hi-lo+1} data). Tengah = (${lo} + ${hi}) ÷ 2 = ${(lo+hi)/2}, dibulatkan ke bawah menjadi <b>${mid}</b>. Nilainya <b>${a[mid]}</b>.`});
+    if(a[mid]===t){
+      const c2=Object.assign({},dim);c2[mid]='found';
+      S.push({stage:cellsRow(a,c2,{[mid]:'✔ ketemu'}),stats:`Perbandingan: ${cnt}`,ok:1,msg:`🎉 ${a[mid]} sama dengan target ${t}. <b>Ditemukan</b> di indeks ${mid} hanya dengan <b>${cnt}</b> perbandingan!`});
+      return S;
+    }
+    let m;
+    if(a[mid]<t){for(let i=lo;i<=mid;i++)dim[i]='dim';m=`${a[mid]} lebih <b>kecil</b> dari ${t}, jadi target pasti di <b>kanan</b>. Buang bagian kiri (indeks ${lo}–${mid}).`;lo=mid+1}
+    else{for(let i=mid;i<=hi;i++)dim[i]='dim';m=`${a[mid]} lebih <b>besar</b> dari ${t}, jadi target pasti di <b>kiri</b>. Buang bagian kanan (indeks ${mid}–${hi}).`;hi=mid-1}
+    const c3=Object.assign({},dim);for(let i=lo;i<=hi;i++)c3[i]='range';
+    S.push({stage:cellsRow(a,c3),msg:m,stats:`Perbandingan: ${cnt} · Sisa data: ${Math.max(0,hi-lo+1)}`});
+  }
+  S.push({stage:cellsRow(a,dim),stats:`Perbandingan: ${cnt}`,bad:1,msg:`Rentang pencarian sudah habis. Angka ${t} <b>tidak ada</b> di data (${cnt} perbandingan).`});
+  return S;
+}
+function bubbleSteps(arr,mini){
+  const a=arr.slice(),n=a.length,S=[];let cmp=0,swp=0;const sorted={};const o={mini};
+  const st=p=>`Pass: ${p} · Perbandingan: ${cmp} · Pertukaran: ${swp}`;
+  S.push({stage:barsRow(a,{},{},o),msg:`Data awal. Kita urutkan dari <b>kecil ke besar</b>. Bandingkan dua elemen bersebelahan, tukar jika kiri lebih besar dari kanan.`,stats:st(0),kind:'start'});
+  let early=false;
+  for(let p=0;p<n-1;p++){
+    let swapped=false;
+    for(let j=0;j<n-1-p;j++){
+      cmp++;
+      const c=Object.assign({},sorted);c[j]='cmp';c[j+1]='cmp';
+      const need=a[j]>a[j+1];
+      S.push({stage:barsRow(a,c,{},o),stats:st(p+1),msg:`Bandingkan <b>${a[j]}</b> dan <b>${a[j+1]}</b>. ${need?`${a[j]} lebih besar dari ${a[j+1]}, urutannya salah, jadi <b>ditukar</b>.`:`${a[j]} ≤ ${a[j+1]}, urutannya sudah benar, <b>tidak ditukar</b>.`}`});
+      if(need){
+        swapped=true;swp++;const x=a[j];a[j]=a[j+1];a[j+1]=x;
+        const c2=Object.assign({},sorted);c2[j]='swap';c2[j+1]='swap';
+        S.push({stage:barsRow(a,c2,{},o),stats:st(p+1),msg:`Setelah ditukar: <b>${a[j]}</b> di kiri dan <b>${a[j+1]}</b> di kanan.`});
+      }
+    }
+    sorted[n-1-p]='sorted';
+    S.push({kind:'passEnd',stage:barsRow(a,Object.assign({},sorted),{},o),stats:st(p+1),msg:`<b>Pass ${p+1} selesai.</b> Angka <b>${a[n-1-p]}</b> sudah berada di posisi akhirnya. ${swapped?'Kondisi data: '+a.join(', ')+'.':''}`});
+    if(!swapped){early=true;break}
+  }
+  const all={};for(let i=0;i<n;i++)all[i]='sorted';
+  S.push({stage:barsRow(a,all,{},o),stats:st(early?'selesai':n-1),ok:1,msg:early?`🎉 Satu pass penuh <b>tanpa pertukaran</b> berarti data sudah urut. Selesai! Hasil: ${a.join(', ')}.`:`🎉 <b>Selesai!</b> Semua elemen sudah terurut: ${a.join(', ')}.`});
+  return S;
+}
+function selectionSteps(arr,mini){
+  const a=arr.slice(),n=a.length,S=[];let cmp=0,swp=0;const sorted={};const o={mini};
+  const st=r=>`Putaran: ${r} · Perbandingan: ${cmp} · Pertukaran: ${swp}`;
+  S.push({stage:barsRow(a,{},{},o),msg:`Data awal. Di setiap putaran kita <b>cari yang terkecil</b> dari bagian belum terurut, lalu tukar ke posisi paling depan bagian itu.`,stats:st(0),kind:'start'});
+  for(let i=0;i<n-1;i++){
+    let m=i;
+    S.push({stage:barsRow(a,Object.assign({},sorted,{[i]:'min'}),{[i]:'min'},o),stats:st(i+1),msg:`<b>Putaran ${i+1}.</b> Bagian belum terurut mulai dari indeks ${i}. Anggap sementara <b>${a[i]}</b> adalah yang terkecil.`});
+    for(let j=i+1;j<n;j++){
+      cmp++;
+      const c=Object.assign({},sorted);c[m]='min';c[j]='cmp';
+      const sm=a[j]<a[m];
+      S.push({stage:barsRow(a,c,{[m]:'min'},o),stats:st(i+1),msg:`Bandingkan <b>${a[j]}</b> dengan terkecil sementara <b>${a[m]}</b>. ${sm?`${a[j]} lebih kecil, jadi terkecil yang baru adalah <b>${a[j]}</b>.`:`${a[m]} tetap yang terkecil.`}`});
+      if(sm)m=j;
+    }
+    if(m!==i){
+      const c=Object.assign({},sorted);c[i]='swap';c[m]='swap';
+      S.push({stage:barsRow(a,c,{},o),stats:st(i+1),msg:`Terkecil di bagian ini adalah <b>${a[m]}</b> (indeks ${m}). Tukar dengan <b>${a[i]}</b> di indeks ${i}.`});
+      const x=a[i];a[i]=a[m];a[m]=x;swp++;
+    }else{
+      S.push({stage:barsRow(a,Object.assign({},sorted,{[i]:'min'}),{},o),stats:st(i+1),msg:`<b>${a[i]}</b> sudah yang terkecil dan sudah di posisi yang benar, tidak perlu menukar.`});
+    }
+    sorted[i]='sorted';
+    S.push({kind:'roundEnd',stage:barsRow(a,Object.assign({},sorted),{},o),stats:st(i+1),msg:`<b>Putaran ${i+1} selesai.</b> Posisi ${i} terisi <b>${a[i]}</b>. Kondisi data: ${a.join(', ')}.`});
+  }
+  const all={};for(let i=0;i<n;i++)all[i]='sorted';
+  S.push({stage:barsRow(a,all,{},o),stats:st(n-1),ok:1,msg:`🎉 <b>Selesai!</b> Semua elemen terurut: ${a.join(', ')}.`});
+  return S;
+}
+
+/* ============ Player ============ */
+function mountPlayer(host,cfg){
+  host.innerHTML=`<div class="stage"></div>${cfg.legend?`<div class="legend">${cfg.legend.map(l=>`<span><i class="sw ${l[0]}"></i>${l[1]}</span>`).join('')}</div>`:''}
+  <div class="msgbox" aria-live="polite"></div><div class="stats"></div>
+  <div class="ctrl"><button class="btn" data-a="first">⏮ Ulang</button><button class="btn" data-a="prev">◀ Mundur</button><button class="btn primary" data-a="play">▶ Putar otomatis</button><button class="btn" data-a="next">Maju ▶</button><span class="stepno"></span><label class="spd">Kecepatan <select><option value="1500">Pelan</option><option value="950" selected>Sedang</option><option value="450">Cepat</option></select></label></div>`;
+  const q=s=>host.querySelector(s);let steps=cfg.steps(),i=0,timer=null;
+  function show(){
+    const s=steps[i];q('.stage').innerHTML=s.stage;const mb=q('.msgbox');mb.innerHTML=s.msg;mb.className='msgbox'+(s.ok?' ok':s.bad?' bad':'');
+    q('.stats').innerHTML=s.stats||'';q('.stepno').textContent=`Langkah ${i+1} dari ${steps.length}`;
+    q('[data-a=prev]').disabled=i===0;q('[data-a=first]').disabled=i===0;q('[data-a=next]').disabled=i===steps.length-1;
+  }
+  function stop(){if(timer){clearInterval(timer);timer=null}q('[data-a=play]').textContent='▶ Putar otomatis'}
+  function start(){
+    if(i>=steps.length-1){i=0;show()}
+    q('[data-a=play]').textContent='⏸ Jeda';
+    timer=setInterval(()=>{if(i<steps.length-1){i++;show()}else stop()},+q('select').value);
+  }
+  host.addEventListener('click',e=>{
+    const b=e.target.closest('[data-a]');if(!b)return;const a=b.dataset.a;
+    if(a==='first'){stop();i=0;show()}
+    else if(a==='prev'){stop();if(i>0){i--;show()}}
+    else if(a==='next'){stop();if(i<steps.length-1){i++;show()}}
+    else if(a==='play'){timer?stop():start()}
+  });
+  q('select').addEventListener('change',()=>{if(timer){stop();start()}});
+  onLeave(stop);show();
+  return{reload(){stop();steps=cfg.steps();i=0;show()}};
+}
+function modeTabs(host,modes){
+  host.innerHTML=`<div class="seg" role="tablist">${modes.map((m,k)=>`<button data-m="${k}" role="tab">${m[0]}</button>`).join('')}</div><div class="mbody"></div>`;
+  const body=host.querySelector('.mbody');
+  function sel(k){$$('.seg button',host).forEach((b,j)=>b.classList.toggle('on',j===k));cleanup();body.innerHTML='';modes[k][1](body)}
+  host.querySelector('.seg').addEventListener('click',e=>{const b=e.target.closest('button');if(b)sel(+b.dataset.m)});
+  sel(0);
+}
+
+/* ============ Simulasi ============ */
+function simLinear(host){
+  modeTabs(host,[['🎬 Demo langkah demi langkah',linearDemo],['🎮 Coba sendiri: buka kotak',linearTry]]);
+}
+function linearDemo(host){
+  let a=randArr(8,1,60),t=a[rnd(0,7)];const NF=99;
+  host.innerHTML=`<div class="cfg"><label>Cari angka: <select id="tg"></select></label><button class="btn" id="nw">🎲 Data baru</button></div><div class="pl"></div>`;
+  const sel=$('#tg',host);
+  function fill(){sel.innerHTML=a.map(v=>`<option value="${v}">${v}</option>`).join('')+`<option value="${NF}">${NF} (tidak ada di data)</option>`;sel.value=String(t)}
+  fill();
+  const pl=mountPlayer($('.pl',host),{steps:()=>linearSteps(a,t),legend:[['cmp','Sedang diperiksa'],['dim','Sudah diperiksa'],['found','Ditemukan']]});
+  sel.onchange=()=>{t=+sel.value;pl.reload()};
+  $('#nw',host).onclick=()=>{a=randArr(8,1,60);t=a[rnd(0,7)];fill();pl.reload()};
+}
+function linearTry(host){
+  let a,t,opened,done,fb;
+  function init(){a=randArr(8,1,60);t=a[rnd(0,7)];opened={};done=false;fb='Klik kotak untuk membukanya. Temukan angka target dengan membuka sesedikit mungkin kotak!';draw()}
+  function draw(){
+    const c={};a.forEach((v,i)=>{if(!opened[i])c[i]='hid';else c[i]=(v===t?'found':'dim')});
+    const vals=a.map((v,i)=>opened[i]?v:'?');
+    const n=Object.keys(opened).length;
+    host.innerHTML=`<div class="panel soft inline"><b>🎯 Target: ${t}</b> · Kotak terbuka: <b>${n}</b></div><div class="stage" style="margin-top:10px">${cellsRow(vals,c,{},{click:!done})}</div><div class="msgbox ${done?'ok':''}">${fb}</div><div class="ctrl"><button class="btn" id="rs">🔄 Main lagi</button></div>`;
+    $('#rs',host).onclick=init;
+  }
+  host.addEventListener('click',e=>{
+    const c=e.target.closest('[data-i]');if(!c||done)return;const i=+c.dataset.i;if(opened[i])return;
+    opened[i]=1;const n=Object.keys(opened).length;
+    if(a[i]===t){done=true;const lin=i+1;fb=`🎉 Ketemu di indeks ${i} setelah membuka ${n} kotak. Linear search yang berurutan dari kiri akan membuka <b>${lin}</b> kotak untuk kasus ini. ${n<lin?'Kamu beruntung, bisa lebih cepat dari linear search! Tapi cara menebak tidak bisa diandalkan.':n===lin?'Sama persis dengan linear search.':'Membuka acak ternyata lebih boros. Berurutan lebih sistematis.'}`}
+    else fb=`Kotak indeks ${i} berisi <b>${a[i]}</b>, bukan ${t}. Lanjut buka kotak lain.`;
+    draw();
+  });
+  init();
+}
+function simBinary(host){modeTabs(host,[['🎬 Demo langkah demi langkah',binaryDemo],['🎮 Tebak angka 1–100',binaryGame]])}
+function binaryDemo(host){
+  let a=randArr(15,1,99,true),t=a[rnd(0,14)];const NF=-1;
+  host.innerHTML=`<div class="cfg"><label>Cari angka: <select id="tg"></select></label><button class="btn" id="nw">🎲 Data baru</button><span class="muted">L = kiri · M = tengah · R = kanan</span></div><div class="pl"></div>`;
+  const sel=$('#tg',host);
+  function nf(){let x;do{x=rnd(1,99)}while(a.indexOf(x)>=0);return x}
+  let nfv=nf();
+  function fill(){sel.innerHTML=a.map(v=>`<option value="${v}">${v}</option>`).join('')+`<option value="${nfv}">${nfv} (tidak ada di data)</option>`;sel.value=String(t)}
+  fill();
+  const pl=mountPlayer($('.pl',host),{steps:()=>binarySteps(a,t),legend:[['mid','Elemen tengah (M)'],['range','Rentang pencarian'],['dim','Sudah dibuang'],['found','Ditemukan']]});
+  sel.onchange=()=>{t=+sel.value;pl.reload()};
+  $('#nw',host).onclick=()=>{a=randArr(15,1,99,true);t=a[rnd(0,14)];nfv=nf();fill();pl.reload()};
+}
+function binaryGame(host){
+  let lo,hi,secret,count,hist,done,fb,cls;
+  function init(){lo=1;hi=100;secret=rnd(1,100);count=0;hist=[];done=false;fb='Aku memikirkan sebuah angka antara <b>1 dan 100</b>. Coba tebak! Petunjuk: tebaklah angka di <b>tengah</b> rentang.';cls='';draw()}
+  function draw(){
+    host.innerHTML=`<div class="panel inline"><b>Rentang yang masih mungkin: ${lo} – ${hi}</b> (${hi-lo+1} angka)<div class="strip"><div class="rng" style="left:${lo-1}%;width:${hi-lo+1}%"></div></div><div class="striplab"><span>1</span><span>100</span></div></div>
+    <div class="msgbox ${cls}" style="margin-top:10px">${fb}</div>
+    ${done?'':`<div class="ops"><input id="g" type="number" min="1" max="100" placeholder="Tebakan" inputmode="numeric"><button class="btn primary" id="go">Tebak</button><button class="btn" id="sg">💡 Saran: tebak tengah</button></div>`}
+    <div class="stats">Jumlah tebakan: ${count}</div><div class="hist">${hist.map(h=>`<span>${h}</span>`).join('')}</div>
+    <div class="ctrl"><button class="btn" id="rs">🔄 Main lagi</button></div>`;
+    $('#rs',host).onclick=init;
+    if(!done){
+      const inp=$('#g',host);inp.focus();
+      $('#sg',host).onclick=()=>{inp.value=Math.floor((lo+hi)/2);inp.focus()};
+      const go=()=>{
+        const g=parseInt(inp.value,10);
+        if(!(g>=1&&g<=100)){fb='Masukkan angka antara 1 sampai 100.';cls='bad';draw();return}
+        count++;
+        if(g===secret){done=true;cls='ok';fb=`🎉 Benar! Angkanya <b>${secret}</b>. Kamu butuh <b>${count}</b> tebakan. Dengan strategi bagi dua, angka 1–100 pasti ketemu paling banyak dalam <b>7</b> tebakan.`;hist.push(`${g} ✔`)}
+        else if(g<secret){fb=`${g} <b>terlalu kecil</b>. Semua angka sampai ${g} bisa dibuang.`;cls='';lo=Math.max(lo,g+1);hist.push(`${g} ↑`)}
+        else{fb=`${g} <b>terlalu besar</b>. Semua angka dari ${g} ke atas bisa dibuang.`;cls='';hi=Math.min(hi,g-1);hist.push(`${g} ↓`)}
+        draw();
+      };
+      $('#go',host).onclick=go;inp.onkeydown=e=>{if(e.key==='Enter')go()};
+    }
+  }
+  init();
+}
+function simBubble(host){modeTabs(host,[['🎬 Demo langkah demi langkah',bubbleDemo],['🎮 Coba sendiri: tukar atau tidak?',bubbleTry]])}
+function sortCfg(host,cb){
+  host.insertAdjacentHTML('afterbegin',`<div class="cfg"><label>Jumlah data: <select id="cn"><option>5</option><option selected>6</option><option>7</option><option>8</option></select></label><button class="btn" id="nw">🎲 Data baru</button></div>`);
+  const get=()=>+$('#cn',host).value;
+  $('#nw',host).onclick=()=>cb(get());$('#cn',host).onchange=()=>cb(get());
+  return get;
+}
+function bubbleDemo(host){
+  let a=randArr(6,1,30);
+  host.innerHTML='<div class="pl"></div>';
+  const pl=mountPlayer($('.pl',host),{steps:()=>bubbleSteps(a),legend:[['cmp','Dibandingkan'],['swap','Ditukar'],['sorted','Sudah di posisi akhir']]});
+  sortCfg(host,n=>{a=randArr(n,1,30);pl.reload()});
+}
+function bubbleTry(host){
+  let a,n=6,st;
+  function init(){a=randArr(n,1,30);st={a,p:0,j:0,sorted:{},mist:0,swapped:false,done:false,fb:'Urutkan dari <b>kecil ke besar</b>. Dua batang yang menyala kuning sedang dibandingkan. Putuskan: <b>tukar</b> atau <b>jangan tukar</b>?',cls:''};draw()}
+  function draw(){
+    const c=Object.assign({},st.sorted);if(!st.done){c[st.j]='cmp';c[st.j+1]='cmp'}
+    const x=st.a[st.j],y=st.a[st.j+1];
+    host.innerHTML=`<div class="cfg"><label>Jumlah data: <select id="cn">${[5,6,7,8].map(v=>`<option ${v===n?'selected':''}>${v}</option>`).join('')}</select></label><button class="btn" id="nw">🎲 Data baru</button></div>
+    <div class="stage">${barsRow(st.a,c)}</div>
+    <div class="msgbox ${st.cls}" aria-live="polite">${st.fb}</div>
+    <div class="stats">Pass: ${Math.min(st.p+1,n-1)} · Kesalahan: ${st.mist}</div>
+    <div class="ctrl">${st.done?'<button class="btn primary" id="again">🔄 Main lagi</button>':`<span><b>${x}</b> dan <b>${y}</b>:</span><button class="btn bad" id="sw">🔁 Tukar</button><button class="btn good" id="ns">✋ Jangan tukar</button>`}</div>`;
+    $('#cn',host).onchange=e=>{n=+e.target.value;init()};$('#nw',host).onclick=init;
+    if(st.done)$('#again',host).onclick=init;
+    else{$('#sw',host).onclick=()=>ans(true);$('#ns',host).onclick=()=>ans(false)}
+  }
+  function ans(swap){
+    const j=st.j,x=st.a[j],y=st.a[j+1],need=x>y;
+    if(swap===need){
+      if(need){st.a[j]=y;st.a[j+1]=x;st.swapped=true;st.fb=`✅ Tepat! ${x} > ${y}, jadi ditukar.`}
+      else st.fb=`✅ Tepat! ${x} ≤ ${y}, urutan sudah benar.`;
+      st.cls='ok';st.j++;
+      if(st.j>n-2-st.p){
+        st.sorted[n-1-st.p]='sorted';
+        if(!st.swapped){for(let i=0;i<n;i++)st.sorted[i]='sorted';st.done=true;st.fb+=` 🎉 Pass ini tanpa pertukaran, artinya data <b>sudah urut</b>. Kesalahanmu: ${st.mist}.`}
+        else{st.p++;st.j=0;st.swapped=false;st.fb+=` Pass selesai, angka terbesar sudah di posisi akhir.`;if(st.p>=n-1){for(let i=0;i<n;i++)st.sorted[i]='sorted';st.done=true;st.fb+=` 🎉 Semua terurut! Kesalahanmu: ${st.mist}.`}}
+      }
+    }else{
+      st.mist++;st.cls='bad';
+      st.fb=need?`❌ Belum tepat. ${x} <b>lebih besar</b> dari ${y}, padahal yang kiri harus lebih kecil. Seharusnya <b>ditukar</b>.`:`❌ Belum tepat. ${x} sudah ≤ ${y}, urutannya sudah benar. Seharusnya <b>jangan ditukar</b>.`;
+    }
+    draw();
+  }
+  init();
+}
+function simSelection(host){modeTabs(host,[['🎬 Demo langkah demi langkah',selectionDemo],['🎮 Coba sendiri: temukan yang terkecil',selectionTry]])}
+function selectionDemo(host){
+  let a=randArr(6,1,30);
+  host.innerHTML='<div class="pl"></div>';
+  const pl=mountPlayer($('.pl',host),{steps:()=>selectionSteps(a),legend:[['min','Terkecil sementara'],['cmp','Sedang dibandingkan'],['swap','Akan ditukar'],['sorted','Sudah terurut']]});
+  sortCfg(host,n=>{a=randArr(n,1,30);pl.reload()});
+}
+function selectionTry(host){
+  let n=6,st;
+  function init(){st={a:randArr(n,1,30),i:0,sorted:{},mist:0,done:false,fb:'Klik batang dengan angka <b>terkecil</b> di bagian yang <b>belum terurut</b> (batang biru muda). Ia akan ditukar ke posisi depan.',cls:''};draw()}
+  function draw(){
+    const c=Object.assign({},st.sorted);if(!st.done)for(let k=st.i;k<n;k++)c[k]='range';
+    host.innerHTML=`<div class="cfg"><label>Jumlah data: <select id="cn">${[5,6,7,8].map(v=>`<option ${v===n?'selected':''}>${v}</option>`).join('')}</select></label><button class="btn" id="nw">🎲 Data baru</button></div>
+    <div class="stage">${barsRow(st.a,c,{},{click:!st.done})}</div>
+    <div class="msgbox ${st.cls}" aria-live="polite">${st.fb}</div>
+    <div class="stats">Putaran: ${Math.min(st.i+1,n-1)} · Kesalahan: ${st.mist}</div>
+    <div class="ctrl">${st.done?'<button class="btn primary" id="again">🔄 Main lagi</button>':''}</div>`;
+    $('#cn',host).onchange=e=>{n=+e.target.value;init()};$('#nw',host).onclick=init;
+    if(st.done)$('#again',host).onclick=init;
+  }
+  host.addEventListener('click',e=>{
+    const b=e.target.closest('.bar[data-i]');if(!b||st.done)return;const k=+b.dataset.i;
+    if(k<st.i){st.fb='Bagian itu sudah terurut. Pilih dari batang biru muda.';st.cls='bad';draw();return}
+    const i=st.i,mn=Math.min.apply(null,st.a.slice(i));
+    if(st.a[k]===mn){
+      const old=st.a[i];
+      if(k===i)st.fb=`✅ Tepat! <b>${mn}</b> terkecil dan sudah ada di posisi ${i}, tidak perlu menukar.`;
+      else{st.a[k]=old;st.a[i]=mn;st.fb=`✅ Tepat! <b>${mn}</b> adalah yang terkecil. Ditukar dengan ${old} di posisi ${i}.`}
+      st.cls='ok';st.sorted[i]='sorted';st.i++;
+      if(st.i>=n-1){for(let q=0;q<n;q++)st.sorted[q]='sorted';st.done=true;st.fb+=` 🎉 Selesai, semua terurut! Kesalahanmu: ${st.mist}.`}
+    }else{st.mist++;st.cls='bad';st.fb=`❌ <b>${st.a[k]}</b> bukan yang terkecil, masih ada angka yang lebih kecil di bagian belum terurut. Periksa semua batang biru muda.`}
+    draw();
+  });
+  init();
+}
+
+function simStack(host){
+  const CAP=6;let s=[],logs=[],hl='',nextV=rnd(1,99);
+  function log(m,err){logs.unshift(`<div class="${err?'e':''}">› ${m}</div>`);logs=logs.slice(0,8)}
+  function draw(shake){
+    host.innerHTML=`<div class="split"><div class="${shake?'shake':''}">${stackViz(s,CAP,{hl})}</div><div>
+    <div class="panel inline"><h3>Operasi stack</h3>
+    <div class="ops"><input id="v" type="number" min="1" max="99" value="${nextV}" aria-label="Nilai"><button class="btn primary" id="push">⬇ push</button><button class="btn bad" id="pop">⬆ pop</button><button class="btn" id="peek">👁 peek</button><button class="btn" id="clr">🔄 Kosongkan</button></div>
+    <div class="status"><span>Ukuran: ${s.length}/${CAP}</span><span class="${s.length===0?'on':''}">isEmpty: ${s.length===0?'ya':'tidak'}</span><span class="${s.length===CAP?'on':''}">isFull: ${s.length===CAP?'ya':'tidak'}</span></div>
+    <div class="log" aria-live="polite">${logs.join('')||'<div>Belum ada operasi. Coba push beberapa angka lalu pop.</div>'}</div></div>
+    <div class="tip">💡 <b>Coba:</b> push 3 angka berbeda, lalu pop satu kali. Angka mana yang keluar lebih dulu? Lalu coba pop saat kosong dan push saat penuh.</div></div></div>`;
+    $('#push',host).onclick=()=>{
+      const v=parseInt($('#v',host).value,10);
+      if(!(v>=1&&v<=99)){log('Masukkan angka 1–99',1);hl='';return draw()}
+      if(s.length>=CAP){log(`push(${v}) → <b>OVERFLOW</b>: stack penuh!`,1);hl='';return draw(1)}
+      s.push(v);hl='';log(`push(${v}) → ukuran ${s.length}`);nextV=rnd(1,99);draw();
+    };
+    $('#pop',host).onclick=()=>{
+      if(!s.length){log('pop() → <b>UNDERFLOW</b>: stack kosong!',1);hl='';return draw(1)}
+      const v=s.pop();hl='';log(`pop() → ${v} keluar, ukuran ${s.length}`);draw();
+    };
+    $('#peek',host).onclick=()=>{
+      if(!s.length){log('peek() → stack kosong, tidak ada puncak',1);hl='';return draw(1)}
+      hl='hl';log(`peek() → puncak = ${s[s.length-1]} (tidak dihapus)`);draw();
+    };
+    $('#clr',host).onclick=()=>{s=[];logs=[];hl='';draw()};
+  }
+  draw();
+}
+function simQueue(host){
+  const CAP=7;let q=[],logs=[],last=false,nextV=rnd(1,99);
+  function log(m,err){logs.unshift(`<div class="${err?'e':''}">› ${m}</div>`);logs=logs.slice(0,8)}
+  function draw(shake){
+    host.innerHTML=`<div class="${shake?'shake':''}">${queueViz(q,CAP,{hlLast:last})}</div>
+    <div class="panel inline" style="margin-top:12px"><h3>Operasi queue</h3>
+    <div class="ops"><input id="v" type="number" min="1" max="99" value="${nextV}" aria-label="Nilai"><button class="btn primary" id="enq">➡ enqueue</button><button class="btn bad" id="deq">⬅ dequeue</button><button class="btn" id="fr">👁 front</button><button class="btn" id="clr">🔄 Kosongkan</button></div>
+    <div class="status"><span>Ukuran: ${q.length}/${CAP}</span><span class="${q.length===0?'on':''}">isEmpty: ${q.length===0?'ya':'tidak'}</span><span class="${q.length===CAP?'on':''}">isFull: ${q.length===CAP?'ya':'tidak'}</span></div>
+    <div class="log" aria-live="polite">${logs.join('')||'<div>Belum ada operasi. Coba enqueue beberapa angka lalu dequeue.</div>'}</div></div>
+    <div class="tip">💡 <b>Coba:</b> enqueue 3 angka berbeda, lalu dequeue satu kali. Bandingkan dengan stack tadi: sekarang angka mana yang keluar lebih dulu?</div>`;
+    $('#enq',host).onclick=()=>{
+      const v=parseInt($('#v',host).value,10);
+      if(!(v>=1&&v<=99)){log('Masukkan angka 1–99',1);last=false;return draw()}
+      if(q.length>=CAP){log(`enqueue(${v}) → <b>OVERFLOW</b>: antrean penuh!`,1);last=false;return draw(1)}
+      q.push(v);last=true;log(`enqueue(${v}) → masuk di belakang, ukuran ${q.length}`);nextV=rnd(1,99);draw();
+    };
+    $('#deq',host).onclick=()=>{
+      if(!q.length){log('dequeue() → <b>UNDERFLOW</b>: antrean kosong!',1);last=false;return draw(1)}
+      const v=q.shift();last=false;log(`dequeue() → ${v} keluar dari depan, ukuran ${q.length}`);draw();
+    };
+    $('#fr',host).onclick=()=>{
+      if(!q.length){log('front() → antrean kosong',1);return draw(1)}
+      log(`front() → elemen depan = ${q[0]} (tidak dihapus)`);draw();
+    };
+    $('#clr',host).onclick=()=>{q=[];logs=[];last=false;draw()};
+  }
+  draw();
+}
+const SIM={linear:simLinear,binary:simBinary,bubble:simBubble,selection:simSelection,stack:simStack,queue:simQueue};
+
+/* ============ Ilustrasi statis (tab konsep) ============ */
+const ILUS={
+linear(){
+  const a=[14,7,23,5,18],t=23,s=linearSteps(a,t).filter(x=>x.msg.indexOf('Periksa')===0||x.ok);
+  return `<div class="ilus">${s.map((x,k)=>`<div class="fr">${x.stage}<div class="cap">${x.msg}</div></div>`).join('')}</div>`;
+},
+binary(){
+  const a=[3,8,12,17,21,26,30,35,41,47,52,58,64,70,79],t=47;
+  const s=binarySteps(a,t).filter(x=>x.kind==='mid'||x.ok);
+  return `<p class="muted">Mencari <b>${t}</b> pada 15 data terurut. Hanya perlu <b>${s.length-1}</b> perbandingan, padahal linear search butuh 10.</p><div class="ilus">${s.map(x=>`<div class="fr"><div style="overflow-x:auto">${x.stage.replace('class="cells"','class="cells mini"')}</div><div class="cap">${x.msg}</div></div>`).join('')}</div>
+  <h4 style="margin-top:16px">Seberapa hemat?</h4><div class="tblwrap"><table class="cmp"><tr><th>Banyak data (terurut)</th><th>Linear search (terburuk)</th><th>Binary search (terburuk)</th></tr><tr><td>8</td><td>8 pemeriksaan</td><td>4</td></tr><tr><td>100</td><td>100</td><td>7</td></tr><tr><td>1.000</td><td>1.000</td><td>10</td></tr><tr><td>1.000.000</td><td>1.000.000</td><td>20</td></tr></table></div>`;
+},
+bubble(){
+  const s=bubbleSteps([4,3,1,2],true).filter(x=>x.kind==='start'||x.kind==='passEnd');
+  return `<p class="muted">Contoh data <b>4, 3, 1, 2</b>. Perhatikan bagaimana angka terbesar “menggelembung” ke kanan di tiap pass.</p><div class="ilus"><div class="row3">${s.map((x,k)=>`<div class="fr"><b>${k===0?'Awal':'Setelah pass '+k}</b>${x.stage}</div>`).join('')}</div></div>`;
+},
+selection(){
+  const s=selectionSteps([64,25,12,22,11],true).filter(x=>x.kind==='start'||x.kind==='roundEnd');
+  return `<p class="muted">Contoh data <b>64, 25, 12, 22, 11</b>. Di tiap putaran, bagian hijau (terurut) bertambah satu.</p><div class="ilus"><div class="row3">${s.map((x,k)=>`<div class="fr"><b>${k===0?'Awal':'Setelah putaran '+k}</b>${x.stage}</div>`).join('')}</div></div>`;
+},
+stack(){
+  const snaps=[[[],'Stack kosong'],[['A'],'push(A)'],[['A','B'],'push(B)'],[['A','B','C'],'push(C)'],[['A','B'],'pop() → C keluar']];
+  return `<p class="muted">Urutan masuk: A, B, C. Urutan keluar: C, B, A (terbalik).</p><div class="ilus"><div class="row3">${snaps.map(x=>`<div class="fr" style="padding-right:50px">${stackViz(x[0],4,{mini:true})}<div class="cap"><b>${x[1]}</b></div></div>`).join('')}</div></div>`;
+},
+queue(){
+  const snaps=[[['A'],'enqueue(A)'],[['A','B'],'enqueue(B)'],[['A','B','C'],'enqueue(C)'],[['B','C'],'dequeue() → A keluar']];
+  return `<p class="muted">Urutan masuk: A, B, C. Urutan keluar: A, B, C (sama persis).</p><div class="ilus">${snaps.map(x=>`<div class="fr">${queueViz(x[0],5,{mini:true})}<div class="cap"><b>${x[1]}</b></div></div>`).join('')}</div>
+  <h4 style="margin-top:16px">Stack vs Queue</h4><div class="tblwrap"><table class="cmp"><tr><th></th><th>Stack</th><th>Queue</th></tr><tr><td>Prinsip</td><td>LIFO (terakhir masuk, pertama keluar)</td><td>FIFO (pertama masuk, pertama keluar)</td></tr><tr><td>Masuk lewat</td><td>Puncak</td><td>Belakang</td></tr><tr><td>Keluar lewat</td><td>Puncak</td><td>Depan</td></tr><tr><td>Operasi</td><td>push, pop, peek</td><td>enqueue, dequeue, front</td></tr><tr><td>Contoh</td><td>Undo, tombol Back, tumpukan piring</td><td>Antrean printer, kasir, tiket</td></tr></table></div>`;
+}
+};
+
+/* ============ Penyimpanan ============ */
+const KEY='algo_dasar_v1';let memStore=null;
+function loadS(){try{const r=localStorage.getItem(KEY);return r?JSON.parse(r):{}}catch(e){return memStore||{}}}
+let S=Object.assign({nama:'',res:{},log:[],guru:false},loadS());
+function saveS(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){memStore=S}}
+const rk=(t,l)=>t+'|'+l;
+function passedCount(t){return[1,2,3].filter(l=>S.res[rk(t,l)]&&S.res[rk(t,l)].lulus).length}
+function totalPassed(){return ORDER.reduce((s,t)=>s+passedCount(t),0)}
+
+/* ============ Bank soal ============ */
+let BANK=[],BANKSRC='bawaan';
+function parseBank(text){
+  return parseCSV(text).filter(r=>r.id&&r.topik&&r.pertanyaan&&r.jawaban).map(r=>({id:r.id.trim(),topik:r.topik.trim().toLowerCase(),level:parseInt(r.level,10)||1,tipe:(r.tipe||'pg').trim().toLowerCase(),pertanyaan:r.pertanyaan,opsi_a:r.opsi_a||'',opsi_b:r.opsi_b||'',opsi_c:r.opsi_c||'',opsi_d:r.opsi_d||'',jawaban:r.jawaban.trim(),penjelasan:r.penjelasan||''}));
+}
+async function loadBank(){
+  const emb=$('#csvdata').textContent;
+  try{
+    const ctl=new AbortController();const to=setTimeout(()=>ctl.abort(),2500);
+    const r=await fetch('soal.csv',{cache:'no-store',signal:ctl.signal});clearTimeout(to);
+    if(r.ok){const b=parseBank(await r.text());if(b.length){BANK=b;BANKSRC='soal.csv';return}}
+  }catch(e){}
+  BANK=parseBank(emb);BANKSRC='bawaan';
+}
+
+/* ============ Router & tampilan ============ */
+let state={page:'home',topic:null,tab:'konsep'};
+function go(page,topic,tab){state={page,topic:topic||null,tab:tab||'konsep'};render()}
+function renderNav(){
+  const n=$('#nav');
+  n.innerHTML=`<button data-go="home" class="${state.page==='home'?'on':''}">🏠 Beranda</button>`+ORDER.map(k=>`<button data-go="topic:${k}" class="${state.page==='topic'&&state.topic===k?'on':''}">${T[k].ikon} ${T[k].nama}${passedCount(k)===3?'<span class="dot"></span>':''}</button>`).join('')+`<button data-go="hasil" class="${state.page==='hasil'?'on':''}">📊 Hasil</button>`;
+}
+function renderProg(){
+  const p=totalPassed();$('#progText').textContent=`Kemajuan: ${p} dari 18 level lulus`;$('#progBar').style.width=Math.round(p/18*100)+'%';
+}
+function render(){
+  cleanup();renderNav();renderProg();
+  const v=$('#view');v.innerHTML='';
+  if(state.page==='home')homeView(v);else if(state.page==='hasil')hasilView(v);else topicView(v,state.topic);
+  try{window.scrollTo({top:0})}catch(e){}
+}
+document.addEventListener('click',e=>{
+  const g=e.target.closest('[data-go]');if(!g)return;
+  const p=g.dataset.go.split(':');
+  if(p[0]==='home')go('home');else if(p[0]==='hasil')go('hasil');else go('topic',p[1],p[2]||'konsep');
+});
+
+function homeView(v){
+  const p=totalPassed(),C=2*Math.PI*44;
+  v.innerHTML=`<section class="hero"><div><h2>Selamat datang! 👋</h2><p>Belajar bagaimana komputer <b>mencari</b> dan <b>mengurutkan</b> data, serta dua struktur data dasar: <b>stack</b> dan <b>queue</b>. Semuanya dijelaskan lewat ilustrasi dan simulasi interaktif, <b>tanpa menulis kode</b>.</p><button class="btn primary big" data-go="topic:linear:konsep">Mulai belajar →</button></div>
+  <div class="ring"><svg width="110" height="110" viewBox="0 0 110 110"><circle cx="55" cy="55" r="44" fill="none" stroke="#e2e8f0" stroke-width="10"/><circle cx="55" cy="55" r="44" fill="none" stroke="#16a34a" stroke-width="10" stroke-linecap="round" stroke-dasharray="${C}" stroke-dashoffset="${C*(1-p/18)}" transform="rotate(-90 55 55)"/><text x="55" y="62" text-anchor="middle" font-size="22" font-weight="800" fill="#0f1d3d">${Math.round(p/18*100)}%</text></svg><div class="muted" style="font-size:.82rem">${p}/18 level lulus</div></div></section>
+  <h3 class="sec">Jalur belajar</h3><div class="path">${ORDER.map((k,i)=>{const t=T[k],c=passedCount(k);return `<button class="tcard" style="--c:${t.warna}" data-go="topic:${k}:konsep"><span class="ic">${t.ikon}</span><b>${i+1}. ${t.nama}</b><small>${t.tag}</small><span class="lvdots">${[1,2,3].map(l=>`<i class="${S.res[rk(k,l)]&&S.res[rk(k,l)].lulus?'ok':''}"></i>`).join('')}<span>${c}/3 level</span></span></button>`}).join('')}</div>
+  <h3 class="sec">Cara belajar</h3><div class="steps3"><div class="panel"><span class="num">1</span><h4>Baca konsep</h4><p>Pahami ide, analogi, dan langkah kerja lewat ilustrasi.</p></div><div class="panel"><span class="num">2</span><h4>Coba simulasi</h4><p>Putar demo langkah demi langkah, lalu coba sendiri dan lihat apakah kamu bisa menebak langkah berikutnya.</p></div><div class="panel"><span class="num">3</span><h4>Kerjakan latihan</h4><p>Tiga level per topik. Capai skor minimal ${LULUS}% untuk membuka level berikutnya.</p></div></div>
+  <h3 class="sec">Perbandingan singkat</h3><div class="grid3">
+  <div class="tblwrap"><table class="cmp"><tr><th colspan="2">Linear vs Binary Search</th></tr><tr><td>Syarat data</td><td>Linear: bebas · Binary: terurut</td></tr><tr><td>Cara</td><td>Linear: satu per satu · Binary: bagi dua</td></tr><tr><td>1.000 data</td><td>Linear: sampai 1.000 · Binary: sekitar 10</td></tr></table></div>
+  <div class="tblwrap"><table class="cmp"><tr><th colspan="2">Bubble vs Selection Sort</th></tr><tr><td>Ide</td><td>Bubble: tukar tetangga · Selection: pilih terkecil</td></tr><tr><td>Pertukaran</td><td>Bubble: banyak · Selection: maksimal n−1</td></tr><tr><td>5 data (terburuk)</td><td>Keduanya sampai 10 perbandingan</td></tr></table></div>
+  <div class="tblwrap"><table class="cmp"><tr><th colspan="2">Stack vs Queue</th></tr><tr><td>Prinsip</td><td>Stack: LIFO · Queue: FIFO</td></tr><tr><td>Keluar dari</td><td>Stack: puncak · Queue: depan</td></tr><tr><td>Contoh</td><td>Stack: Undo · Queue: antrean printer</td></tr></table></div></div>`;
+}
+
+function topicView(v,k){
+  const t=T[k];v.style.setProperty('--accent',t.warna);
+  v.innerHTML=`<div class="thead" style="border-left-color:${t.warna}"><span class="ic">${t.ikon}</span><div><h2>${t.nama}</h2><p>${t.tag}</p></div></div>
+  <div class="tabs" role="tablist">${[['konsep','📖 Konsep'],['simulasi','🎮 Simulasi'],['latihan','✍️ Latihan']].map(x=>`<button class="${state.tab===x[0]?'on':''}" data-tab="${x[0]}" role="tab">${x[1]}</button>`).join('')}</div><div id="tbody"></div>`;
+  $$('.tabs button',v).forEach(b=>b.onclick=()=>{cleanup();state.tab=b.dataset.tab;topicView(v,k)});
+  const body=$('#tbody',v);
+  if(state.tab==='konsep')konsepView(body,k);else if(state.tab==='simulasi'){body.innerHTML='<div class="panel" id="simhost"></div>';SIM[k]($('#simhost',body))}else latihanView(body,k);
+}
+function konsepView(b,k){
+  const t=T[k];
+  b.innerHTML=`<div class="panel"><b>🎯 Tujuan belajar</b><div class="goal">${t.tujuan.map(x=>`<span>${x}</span>`).join('')}</div></div>
+  <div class="grid2"><div class="panel"><h3>Apa itu ${t.nama}?</h3>${t.apa}</div><div class="panel callout"><h3>🧩 Analogi sehari-hari</h3><p>${t.analogi}</p></div></div>
+  <div class="panel"><h3>${k==='stack'||k==='queue'?'Operasi utama':'Cara kerja'}</h3><ol class="steps">${t.langkah.map(x=>`<li>${x}</li>`).join('')}</ol></div>
+  <div class="panel"><h3>🖼️ Ilustrasi</h3>${ILUS[k]()}</div>
+  <div class="grid2"><div class="panel"><h3>Kelebihan</h3><ul class="plus">${t.plus.map(x=>`<li>${x}</li>`).join('')}</ul></div><div class="panel"><h3>Keterbatasan</h3><ul class="minus">${t.minus.map(x=>`<li>${x}</li>`).join('')}</ul></div></div>
+  <div class="panel soft"><h3>📌 Ingat!</h3><ul>${t.ingat.map(x=>`<li>${x}</li>`).join('')}</ul></div>
+  <div class="center" style="margin:16px 0"><button class="btn primary big" data-go="topic:${k}:simulasi">Coba simulasinya →</button></div>`;
+}
+
+/* ============ Latihan ============ */
+function latihanView(b,k){
+  const lv=[1,2,3];
+  b.innerHTML=`<div class="panel"><h3>Latihan berjenjang</h3><p>Selesaikan setiap level dengan skor minimal <b>${LULUS}%</b> untuk membuka level berikutnya. Hasilmu tersimpan otomatis dan bisa diunduh sebagai file <b>CSV</b> di menu <b>📊 Hasil</b>.</p></div><div class="grid3" id="lvls"></div><div id="qarea"></div>`;
+  $('#lvls',b).innerHTML=lv.map(l=>{
+    const qs=BANK.filter(q=>q.topik===k&&q.level===l),r=S.res[rk(k,l)];
+    const open=l===1||S.guru||(S.res[rk(k,l-1)]&&S.res[rk(k,l-1)].lulus);
+    return `<div class="lvl ${open?'':'lock'}"><span class="big">${open?LEVELS[l].ikon:'🔒'}</span><b>${LEVELS[l].nama}</b><span class="muted">${LEVELS[l].desc} · ${qs.length} soal</span>
+    ${r?`<span class="sc">Skor terbaik: ${r.best}/${r.total} ${r.lulus?'<span class="badge ok">Lulus</span>':'<span class="badge no">Belum lulus</span>'}</span>`:'<span class="badge nol" style="align-self:flex-start">Belum dikerjakan</span>'}
+    <button class="btn primary" data-lv="${l}" ${open&&qs.length?'':'disabled'}>${r?'Kerjakan lagi':'Mulai'}</button>${open?'':'<small class="muted">Lulus Level '+(l-1)+' dulu untuk membuka.</small>'}</div>`;
+  }).join('');
+  $$('[data-lv]',b).forEach(x=>x.onclick=()=>{$('#lvls',b).style.display='none';runQuiz($('#qarea',b),k,+x.dataset.lv,()=>{state.tab='latihan';render()})});
+}
+const normAns=s=>String(s).toLowerCase().replace(/\s+/g,'').replace(/[;،，]/g,',');
+function runQuiz(host,k,level,back){
+  const qs=BANK.filter(q=>q.topik===k&&q.level===level);
+  let i=0,ok=0,marks=[];
+  function showQ(){
+    const q=qs[i];
+    host.innerHTML=`<div class="panel quiz"><div class="qhead"><span class="chip">${LEVELS[level].ikon} ${LEVELS[level].nama}</span><span class="muted">Soal ${i+1} dari ${qs.length}</span></div>
+    <div class="dots">${qs.map((_,j)=>`<i class="${j<i?marks[j]:j===i?'cur':''}"></i>`).join('')}</div>
+    <p class="qtext">${fmt(q.pertanyaan)}</p><div class="opts"></div><div class="fb" style="display:none"></div><div class="ctrl" id="qn"></div></div>`;
+    const opts=$('.opts',host);
+    if(q.tipe==='isian'){
+      opts.outerHTML=`<div class="ans"><input id="ai" placeholder="Tulis jawabanmu" autocomplete="off"><button class="btn primary" id="ab">Periksa</button></div>`;
+      const inp=$('#ai',host);inp.focus();
+      const chk=()=>{if(!inp.value.trim())return;const right=q.jawaban.split('|').some(x=>normAns(x)===normAns(inp.value));inp.disabled=true;$('#ab',host).disabled=true;inp.style.borderColor=right?'var(--ok)':'var(--bad)';done(right,inp.value.trim(),right?'':`Jawaban yang benar: <b>${esc(q.jawaban.split('|')[0])}</b>.`)};
+      $('#ab',host).onclick=chk;inp.onkeydown=e=>{if(e.key==='Enter')chk()};
+    }else{
+      const raw=[['A',q.opsi_a],['B',q.opsi_b],['C',q.opsi_c],['D',q.opsi_d]].filter(o=>o[1]);
+      const sh=shuffle(raw);const L='ABCD';
+      opts.innerHTML=sh.map((o,j)=>`<button class="opt" data-k="${o[0]}"><span class="k">${L[j]}</span><span>${esc(o[1])}</span></button>`).join('');
+      $$('.opt',opts).forEach(btn=>btn.onclick=()=>{
+        const right=btn.dataset.k===q.jawaban.toUpperCase();
+        $$('.opt',opts).forEach(x=>{x.disabled=true;if(x.dataset.k===q.jawaban.toUpperCase())x.classList.add('ok')});
+        if(!right)btn.classList.add('no');
+        done(right,btn.dataset.k+': '+(raw.find(o=>o[0]===btn.dataset.k)||[0,''])[1],'');
+      });
+    }
+    function done(right,given,extra){
+      if(right)ok++;marks[i]=right?'ok':'no';
+      S.log.push({nama:S.nama,waktu:new Date().toISOString(),topik:k,level,id_soal:q.id,tipe:q.tipe,jawaban_siswa:given,benar:right?1:0});
+      if(S.log.length>3000)S.log=S.log.slice(-3000);
+      const fb=$('.fb',host);fb.style.display='block';fb.className='fb '+(right?'ok':'no');
+      fb.innerHTML=`<b>${right?'✅ Benar!':'❌ Belum tepat.'}</b> ${extra} ${esc(q.penjelasan)}`;
+      $('#qn',host).innerHTML=`<button class="btn primary" id="nx">${i<qs.length-1?'Soal berikutnya →':'Lihat hasil →'}</button>`;
+      $('#nx',host).onclick=()=>{i++;i<qs.length?showQ():finish()};$('#nx',host).focus();
+    }
+  }
+  function finish(){
+    const total=qs.length,pct=Math.round(ok/total*100),lulus=pct>=LULUS;
+    const key=rk(k,level),old=S.res[key]||{best:0,attempts:0,lulus:false};
+    S.res[key]={topik:k,level,best:Math.max(old.best,ok),last:ok,total,attempts:old.attempts+1,lulus:old.lulus||lulus,waktu:new Date().toISOString()};
+    saveS();renderNav();renderProg();
+    const nextOpen=lulus&&level<3;
+    host.innerHTML=`<div class="panel center"><div class="score">${ok}/${total}</div><p class="muted">${pct}%</p><h3>${lulus?'🎉 Lulus! Kerja bagus.':'Belum lulus. Tetap semangat!'}</h3>
+    <p>${lulus?(level<3?`Level ${level+1} sekarang terbuka.`:'Kamu menyelesaikan semua level topik ini.'):`Skor minimal untuk lulus adalah ${LULUS}%. Baca lagi konsep atau coba simulasi, lalu ulangi.`}</p>
+    <div class="ctrl" style="justify-content:center"><button class="btn" id="rt">🔄 Ulangi level ini</button>${nextOpen?`<button class="btn primary" id="nl">Lanjut ke Level ${level+1} →</button>`:''}<button class="btn" id="bk">Kembali ke daftar level</button><button class="btn" data-go="topic:${k}:konsep">📖 Baca konsep</button></div></div>`;
+    $('#rt',host).onclick=()=>runQuiz(host,k,level,back);$('#bk',host).onclick=back;
+    if(nextOpen)$('#nl',host).onclick=()=>runQuiz(host,k,level+1,back);
+  }
+  if(!qs.length){host.innerHTML='<div class="panel">Belum ada soal untuk level ini.</div>';return}
+  showQ();
+}
+
+/* ============ Hasil ============ */
+const SUM_COLS=['nama','topik','nama_topik','level','skor_terbaik','skor_terakhir','total_soal','persen_terbaik','status','percobaan','waktu_terakhir'];
+const LOG_COLS=['nama','waktu','topik','level','id_soal','tipe','jawaban_siswa','benar'];
+function summaryRows(){
+  const rows=[];
+  ORDER.forEach(k=>[1,2,3].forEach(l=>{
+    const r=S.res[rk(k,l)];
+    rows.push({nama:S.nama,topik:k,nama_topik:T[k].nama,level:l,skor_terbaik:r?r.best:'',skor_terakhir:r?r.last:'',total_soal:r?r.total:BANK.filter(q=>q.topik===k&&q.level===l).length,persen_terbaik:r?Math.round(r.best/r.total*100):'',status:r?(r.lulus?'Lulus':'Belum lulus'):'Belum dikerjakan',percobaan:r?r.attempts:0,waktu_terakhir:r?r.waktu:''});
+  }));
+  return rows;
+}
+function hasilView(v){
+  const rows=summaryRows();
+  v.innerHTML=`<div class="panel"><h3>📊 Hasil belajar${S.nama?' · '+esc(S.nama):''}</h3>
+  <p>Kemajuan: <b>${totalPassed()}</b> dari 18 level lulus. ${S.nama?'':'<span class="badge no">Isi nama di bagian atas agar tercantum di file CSV.</span>'}</p>
+  <div class="tblwrap"><table class="cmp"><tr><th>Topik</th><th>Level 1</th><th>Level 2</th><th>Level 3</th></tr>${ORDER.map(k=>`<tr><td>${T[k].ikon} ${T[k].nama}</td>${[1,2,3].map(l=>{const r=S.res[rk(k,l)];return `<td>${r?`${r.best}/${r.total} ${r.lulus?'<span class="badge ok">Lulus</span>':'<span class="badge no">Belum</span>'}`:'<span class="badge nol">–</span>'}</td>`}).join('')}</tr>`).join('')}</table></div></div>
+  <div class="panel"><h3>💾 Simpan sebagai CSV</h3><p>Unduh hasil lalu kirimkan filenya kepada guru. File yang sama dapat dimuat kembali untuk melanjutkan di perangkat lain.</p>
+  <div class="ops"><button class="btn primary" id="e1">⬇ Unduh hasil ringkas (.csv)</button><button class="btn" id="e2">⬇ Unduh detail jawaban (.csv)</button><label class="btn" style="cursor:pointer">⬆ Muat hasil dari CSV<input type="file" id="imp" accept=".csv,text/csv" hidden></label><button class="btn danger" id="rst">🗑 Hapus semua hasil</button></div>
+  <div id="csvout"></div></div>
+  <details class="panel"><summary>⚙️ Pengaturan guru: bank soal</summary>
+  <p>Bank soal aktif: <b>${BANK.length} soal</b> (sumber: ${BANKSRC}). Soal disimpan dalam file CSV dengan kolom <code>id, topik, level, tipe, pertanyaan, opsi_a, opsi_b, opsi_c, opsi_d, jawaban, penjelasan</code>. Tipe <code>pg</code> memakai jawaban huruf A–D; tipe <code>isian</code> memakai teks (beberapa jawaban alternatif dipisah tanda <code>|</code>).</p>
+  <div class="ops"><button class="btn" id="eb">⬇ Unduh bank soal (soal.csv)</button><label class="btn" style="cursor:pointer">⬆ Muat bank soal dari CSV<input type="file" id="ib" accept=".csv,text/csv" hidden></label></div><div id="bmsg" class="muted"></div></details>`;
+  const show=(text,name)=>{download(name,text);$('#csvout',v).innerHTML=`<p class="muted" style="margin-top:10px">Jika unduhan tidak berjalan di Canvas, salin teks berikut dan simpan sebagai <b>${name}</b>:</p><textarea class="csvbox" readonly>${esc(text)}</textarea>`;const ta=$('.csvbox',v);ta.onfocus=()=>ta.select()};
+  $('#e1',v).onclick=()=>show(toCSV(SUM_COLS,summaryRows()),'hasil-algoritma-dasar.csv');
+  $('#e2',v).onclick=()=>show(toCSV(LOG_COLS,S.log),'detail-jawaban-algoritma-dasar.csv');
+  $('#imp',v).onchange=e=>{
+    const f=e.target.files[0];if(!f)return;const rd=new FileReader();
+    rd.onload=()=>{const rs=parseCSV(rd.result);let n=0;
+      rs.forEach(r=>{const k=(r.topik||'').toLowerCase(),l=parseInt(r.level,10);
+        if(ORDER.indexOf(k)<0||!(l>=1&&l<=3)||r.skor_terbaik===''||r.skor_terbaik==null)return;
+        S.res[rk(k,l)]={topik:k,level:l,best:+r.skor_terbaik,last:+(r.skor_terakhir||r.skor_terbaik),total:+r.total_soal||3,attempts:+r.percobaan||1,lulus:r.status==='Lulus',waktu:r.waktu_terakhir||new Date().toISOString()};n++;
+        if(r.nama&&!S.nama){S.nama=r.nama;$('#nama').value=S.nama}});
+      saveS();renderNav();renderProg();alert(n?`Berhasil memuat ${n} hasil.`:'Tidak ada data hasil yang bisa dimuat dari file ini.');hasilView(v)};
+    rd.readAsText(f);
+  };
+  $('#rst',v).onclick=()=>{if(confirm('Hapus semua hasil latihan di perangkat ini? Tindakan ini tidak bisa dibatalkan.')){S.res={};S.log=[];saveS();render()}};
+  $('#eb',v).onclick=()=>{const cols=['id','topik','level','tipe','pertanyaan','opsi_a','opsi_b','opsi_c','opsi_d','jawaban','penjelasan'];show(toCSV(cols,BANK),'soal.csv')};
+  $('#ib',v).onchange=e=>{
+    const f=e.target.files[0];if(!f)return;const rd=new FileReader();
+    rd.onload=()=>{const b=parseBank(rd.result);if(!b.length){$('#bmsg',v).textContent='File tidak valid: tidak ada baris soal yang terbaca.';return}BANK=b;BANKSRC='file yang Anda muat';$('#bmsg',v).textContent=`Berhasil memuat ${b.length} soal. (Berlaku sampai halaman ditutup. Untuk permanen, ganti file soal.csv di hosting.)`;}
+    rd.readAsText(f);
+  };
+}
+
+/* ============ Init ============ */
+$('#nama').value=S.nama||'';
+$('#nama').addEventListener('input',e=>{S.nama=e.target.value.trim();saveS()});
+$('#guru').checked=!!S.guru;
+$('#guru').addEventListener('change',e=>{S.guru=e.target.checked;saveS();render()});
+loadBank().then(render);
+window.__app={parseCSV,linearSteps,binarySteps,bubbleSteps,selectionSteps,get BANK(){return BANK}};
+})();
+</script>
+</body>
+</html>
